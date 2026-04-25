@@ -1,0 +1,16 @@
+[
+  {
+    "topic": "Binary Search",
+    "shortDescription": "Efficient algorithm to find an element in a sorted array by repeatedly halving the search range until the element is found or ruled out.",
+    "longDescription": "Binary search checks the middle element of the current range. If it matches the target, return its index. If the target is smaller, search the left half; if larger, search the right half. Repeat until the range is empty.\n\nKey points:\n• Requires a sorted array.\n• O(log N) time; O(1) space iterative (preferred), O(log N) recursive.\n• Midpoint: mid = left + (right - left) / 2 — avoids integer overflow.\n• Loop condition: while left <= right (using < can miss the last element).\n• Always update: left = mid + 1 or right = mid - 1 to prevent infinite loops.",
+    "mainCategory": "Algorithms",
+    "tags": ["searching", "divide and conquer"]
+  },
+  {
+    "topic": "Two Pointers (incl. Sliding Window & Fast–Slow)",
+    "shortDescription": "Use two indices moving through a sequence to solve problems in linear time: opposite-ends for arrays, fast–slow for linked lists, sliding window for substrings/subarrays.",
+    "longDescription": "Two pointers reduce nested loops to a single pass by coordinating two indices.\n\n• Opposite-ends: l at start, r at end; move whichever pointer helps reach the goal (sum < target → l++, sum > target → r--).\n• Sliding window: expand right; while constraint breaks, shrink left; track best valid state.\n• Fast–slow (linked lists): fast moves 2 steps, slow 1 → finds middle when fast ends; detects cycle if they meet (Floyd's algorithm).\n• Time: O(n), after optional O(n log n) sort. Space: O(1) for pure scans; O(k) for windows needing frequency maps.\n• Pitfalls: off-by-one on window bounds, forgetting to move a pointer (infinite loop), not updating counts when shrinking.",
+    "mainCategory": "Algorithms",
+    "tags": ["sliding window", "linked lists", "arrays"]
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "topic": "Workload Identity Federation (WIF) vs. Service Account Keys",
+    "shortDescription": "JSON keys are long-lived static credentials — if stolen they grant permanent access until manually revoked. WIF uses OIDC to exchange short-lived, identity-bound tokens. There is no secret to store or leak, and access is scoped to a specific repo and branch.",
+    "longDescription": "",
+    "mainCategory": "Cloud & DevOps",
+    "tags": ["GCP", "GitHub Actions", "security", "authentication"]
+  }
+]

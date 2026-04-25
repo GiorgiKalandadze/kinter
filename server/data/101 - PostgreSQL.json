@@ -1,0 +1,107 @@
+[
+  {
+    "topic": "Hidden concurrency risks of row-level locking with Foreign Keys",
+    "shortDescription": "Every insert into a child table acquires a FOR SHARE lock on the referenced parent row. In high-traffic systems this creates a hot-row bottleneck where thousands of transactions compete for the same parent record, leading to deadlocks and throughput ceilings.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["foreign keys", "locking", "concurrency"]
+  },
+  {
+    "topic": "Foreign Key validation latency and write overhead",
+    "shortDescription": "Each write to a child table forces a mandatory index lookup on the parent table to verify referential integrity. The cumulative CPU and I/O cost across millions of rows becomes a significant bottleneck in high-throughput environments like logging or real-time event processing.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["foreign keys", "performance", "indexing"]
+  },
+  {
+    "topic": "Foreign Key maintenance bloat",
+    "shortDescription": "To avoid full-table scans on parent deletes, child tables must be manually indexed on the FK column. These extra indexes grow storage and slow every write because the DB must update multiple B-Tree structures simultaneously.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["foreign keys", "indexing", "storage"]
+  },
+  {
+    "topic": "Primary and Foreign Key performance trade-offs at scale",
+    "shortDescription": "Three critical overheads: (1) missing FK indexes cause sequential scans on parent deletes; (2) referential checks create FOR SHARE lock contention on hot parent rows; (3) natural keys increase write amplification compared to surrogate keys as large mutable strings must cascade across all referencing tables.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["foreign keys", "primary keys", "performance", "locking"]
+  },
+  {
+    "topic": "JSONB vs. standard relational schema — when and trade-offs",
+    "shortDescription": "Use JSONB for sparse or dynamic data (e-commerce attributes, external API responses, user-defined forms) where the schema changes too often for migrations. Trade-offs: you lose column statistics (poor query plans), GIN indexes are larger and slower to update than B-Tree, and you lose type safety and FK enforcement.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["JSONB", "schema design", "indexing"]
+  },
+  {
+    "topic": "MVCC (Multi-Version Concurrency Control)",
+    "shortDescription": "PostgreSQL stores multiple versions of each row directly in the main table. An UPDATE marks the old row as dead and inserts a new one. This means readers never block writers and writers never block readers.",
+    "longDescription": "Unlike Oracle's undo segments, Postgres keeps old row versions (dead tuples) in the table itself. Each row carries xmin and xmax transaction IDs; a row is visible to a transaction if its xmin is committed before the transaction started and its xmax is not yet committed. Dead tuples accumulate until VACUUM reclaims them.",
+    "mainCategory": "PostgreSQL",
+    "tags": ["MVCC", "concurrency", "transactions"]
+  },
+  {
+    "topic": "VACUUM and table bloat",
+    "shortDescription": "MVCC leaves dead tuples in the table. The VACUUM process reclaims that space. If autovacuum cannot keep up, table bloat grows — disk usage increases and query performance degrades even when row counts stay stable.",
+    "longDescription": "VACUUM marks dead tuple space as reusable but does not return it to the OS; VACUUM FULL rewrites the table but holds an exclusive lock. Autovacuum runs automatically based on thresholds (autovacuum_vacuum_threshold + autovacuum_vacuum_scale_factor × table size). Tuning these per-table is critical for write-heavy workloads.",
+    "mainCategory": "PostgreSQL",
+    "tags": ["MVCC", "performance", "maintenance"]
+  },
+  {
+    "topic": "Indexing: B-Tree vs. GIN vs. BRIN",
+    "shortDescription": "B-Tree is the default for equality and range queries. GIN is required for JSONB containment and full-text search. BRIN is extremely small and fast to build for massive time-ordered tables — it stores only the min/max per block range, so it only works well on naturally ordered data.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["indexing", "B-Tree", "GIN", "BRIN"]
+  },
+  {
+    "topic": "JSONB vs. JSON data types",
+    "shortDescription": "JSON stores a verbatim text copy (fast writes, slow reads, no indexing). JSONB stores a decomposed binary format (slightly slower writes, much faster reads, supports GIN indexing). Always use JSONB in production.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["JSONB", "storage"]
+  },
+  {
+    "topic": "CTEs and Window Functions",
+    "shortDescription": "CTEs (WITH clause) break complex queries into readable named steps. Window functions (ROW_NUMBER, RANK, LAG, LEAD) compute values across a set of rows related to the current row without collapsing them into groups like GROUP BY does.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["queries", "CTEs", "window functions"]
+  },
+  {
+    "topic": "Connection pooling",
+    "shortDescription": "PostgreSQL spawns a new OS process per connection, which is expensive. In a high-traffic Node.js app, thousands of connections exhaust server memory. Use a pool (pg-pool in the app, or PgBouncer externally) to reuse a small set of persistent connections.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["performance", "connections"]
+  },
+  {
+    "topic": "Transaction isolation levels and row locking",
+    "shortDescription": "Default is Read Committed. Use SELECT ... FOR UPDATE to lock rows during a read-modify-write cycle and prevent race conditions. Repeatable Read prevents phantom reads within a transaction. Serializable provides full serializability at the cost of potential rollbacks.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["transactions", "locking", "concurrency"]
+  },
+  {
+    "topic": "Write-Ahead Logging (WAL)",
+    "shortDescription": "Changes are written to the WAL log before the actual data files are modified. This guarantees crash recovery, powers streaming replication for high availability, and enables point-in-time recovery (PITR).",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["WAL", "replication", "durability"]
+  },
+  {
+    "topic": "Table partitioning",
+    "shortDescription": "Declarative partitioning (Postgres 10+) splits a large table into smaller child tables by range, list, or hash. The query planner prunes irrelevant partitions, and maintenance operations like VACUUM run faster on smaller chunks.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["partitioning", "performance", "scaling"]
+  },
+  {
+    "topic": "Database migrations — the right approach",
+    "shortDescription": "Avoid ORM auto-sync features in production. Use version-controlled SQL migration files (Knex, TypeORM, Flyway, Liquibase). This ensures schema changes are auditable, reproducible, and identical across dev, staging, and production.",
+    "longDescription": "",
+    "mainCategory": "PostgreSQL",
+    "tags": ["migrations", "DevOps"]
+  }
+]

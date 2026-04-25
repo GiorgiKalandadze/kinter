@@ -1,0 +1,86 @@
+  [
+  {
+    "topic": "Data that is accessed together should be stored together",
+    "shortDescription": "Grouping frequently accessed data together minimizes disk I/O and reduces query complexity, leading to faster retrieval.",
+    "longDescription": "When designing MongoDB schemas, storing related data together means fewer round-trips to the database. Denormalization is intentional — unlike relational databases, MongoDB favors embedding related data in the same document when it is always read together. This simplifies queries and improves read performance at the cost of potentially duplicating some data.",
+    "mainCategory": "MongoDB",
+    "tags": ["schema design", "performance"]
+  },
+  {
+    "topic": "Flexible schema model",
+    "shortDescription": "Documents in the same collection can have different fields and data types. There is no enforced schema by default.",
+    "longDescription": "This model lets you add or remove fields from documents without a migration script. It is useful during rapid development or when data structures evolve frequently. The trade-off is that maintaining consistency becomes the application's responsibility. MongoDB 3.6+ supports optional schema validation via JSON Schema if you want to enforce structure.",
+    "mainCategory": "MongoDB",
+    "tags": ["schema design"]
+  },
+  {
+    "topic": "Documents are displayed as JSON but stored in BSON",
+    "shortDescription": "MongoDB presents data in human-readable JSON format but stores it internally as BSON (Binary JSON) for performance.",
+    "longDescription": "BSON extends JSON with additional types (Date, ObjectId, Binary, etc.) that plain JSON does not support. Its binary encoding makes serialization faster and storage more compact. The driver transparently converts between BSON and JSON so application code works with regular objects.",
+    "mainCategory": "MongoDB",
+    "tags": ["BSON", "internals"]
+  },
+  {
+    "topic": "ObjectId",
+    "shortDescription": "A 12-byte unique identifier automatically assigned to every document as its _id field.",
+    "longDescription": "An ObjectId encodes a 4-byte timestamp (seconds since epoch), a 5-byte random value unique to the machine and process, and a 3-byte incrementing counter. This guarantees global uniqueness without a central coordinator. The embedded timestamp allows sorting by _id to approximate insertion order and extracting creation time without a separate field.",
+    "mainCategory": "MongoDB",
+    "tags": ["internals"]
+  },
+  {
+    "topic": "Relationship types: 1:1, 1:Many, Many:Many",
+    "shortDescription": "One-to-one links one record to exactly one other. One-to-many links one record to multiple. Many-to-many requires referencing in both directions, often via an intermediate structure.",
+    "longDescription": "In MongoDB these relationships are modelled either by embedding (nested documents) or referencing (_id pointers). The right choice depends on how frequently the related data is accessed together, how large it grows, and how independently it is updated.",
+    "mainCategory": "MongoDB",
+    "tags": ["schema design", "relationships"]
+  },
+  {
+    "topic": "Embedding vs. Referencing",
+    "shortDescription": "Embedding stores related data inside the same document (better for reads). Referencing stores it in a separate document and links via _id (better for data that is updated independently or grows unboundedly).",
+    "longDescription": "Embed when: data is always fetched together, the embedded data is not shared across many documents, and the array size is bounded. Reference when: the related data is large or frequently updated on its own, it is shared by many parent documents, or embedding would exceed the 16 MB document limit.",
+    "mainCategory": "MongoDB",
+    "tags": ["schema design", "relationships"]
+  },
+  {
+    "topic": "BSON",
+    "shortDescription": "Binary JSON — MongoDB's internal storage format that extends JSON with additional types and encodes data as binary for faster processing.",
+    "longDescription": "BSON supports types that JSON lacks: Date, ObjectId, Binary data, Decimal128, and more. Its binary encoding makes parsing faster and the stored representation more compact than text-based JSON. All MongoDB drivers handle BSON-to-native-type conversion automatically.",
+    "mainCategory": "MongoDB",
+    "tags": ["internals"]
+  },
+  {
+    "topic": "Connection string structure",
+    "shortDescription": "A URI that specifies how to connect to MongoDB, including protocol, credentials, host, port, and options.",
+    "longDescription": "Standard format: mongodb://username:password@host:port/database. Atlas uses the SRV format: mongodb+srv://username:password@cluster.mongodb.net/database, which resolves multiple hosts via DNS. Options like retryWrites, w (write concern), and tls are appended as query parameters.",
+    "mainCategory": "MongoDB",
+    "tags": []
+  },
+  {
+    "topic": "Querying arrays — matching array elements",
+    "shortDescription": "Use $in to match any of a list of values, $all to require all values to be present, and $elemMatch to match a single element against multiple conditions.",
+    "longDescription": "",
+    "mainCategory": "MongoDB",
+    "tags": ["queries", "arrays"]
+  },
+  {
+    "topic": "replaceOne vs updateOne vs findOneAndUpdate",
+    "shortDescription": "replaceOne swaps the entire document (except _id). updateOne modifies specific fields using update operators ($set, $inc, etc.). findOneAndUpdate atomically updates and returns the document.",
+    "longDescription": "",
+    "mainCategory": "MongoDB",
+    "tags": ["writes", "queries"]
+  },
+  {
+    "topic": "GridFS",
+    "shortDescription": "A specification for storing files larger than 16 MB by splitting them into 255 KB chunks, each stored as a separate document.",
+    "longDescription": "GridFS uses two collections: fs.files (metadata) and fs.chunks (binary data). It is useful for large binary blobs — videos, images, backups — when you want them co-located with your data. For most use cases, storing files in object storage (S3, GCS) and saving only the URL in MongoDB is simpler.",
+    "mainCategory": "MongoDB",
+    "tags": ["files", "storage"]
+  },
+  {
+    "topic": "Aggregation pipeline",
+    "shortDescription": "A multi-stage data processing pipeline where each stage transforms the documents and passes results to the next. Supports filtering ($match), reshaping ($project), grouping ($group), sorting ($sort), and joins ($lookup).",
+    "longDescription": "The pipeline runs stages in order, with each stage receiving the output of the previous one. $match early to filter documents before expensive stages. $group produces one document per unique key with accumulated values. $lookup performs a left outer join with another collection. Aggregation runs on the server, making it far more efficient than fetching all documents and processing in application code.",
+    "mainCategory": "MongoDB",
+    "tags": ["queries", "aggregation"]
+  }
+]

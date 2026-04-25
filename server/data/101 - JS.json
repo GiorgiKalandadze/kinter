@@ -1,0 +1,296 @@
+[
+  {
+    "topic": "forEach vs for",
+    "shortDescription": "forEach iterates over an array with a callback and is more readable, but cannot be stopped early. for gives full control including break, continue, and index manipulation.",
+    "longDescription": "The forEach method is a built-in array function that executes a callback once per element. It is clean and concise for simple traversal but does not support break or continue — the loop always runs to completion. The traditional for loop lets you modify the index, break out early, or skip iterations. for is preferred when you need early termination, performance-critical code, or non-standard index stepping. forEach is preferred for readability when you just need to apply an operation to every element.",
+    "mainCategory": "JavaScript",
+    "tags": ["iteration", "arrays"]
+  },
+  {
+    "topic": "Class vs object vs instance",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "IIFE vs anonymous functions",
+    "shortDescription": "All IIFEs are anonymous functions, but not all anonymous functions are IIFEs. An IIFE is an anonymous function that is defined and immediately invoked.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions"]
+  },
+  {
+    "topic": "Use of anonymous functions",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Prototype",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Regular expressions",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "new keyword with functions",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Target vs currentTarget",
+    "shortDescription": "event.target is the element that originally triggered the event (where the user clicked). event.currentTarget is the element the event listener is attached to.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["events", "DOM"]
+  },
+  {
+    "topic": "Map vs object in JavaScript",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Short-circuit evaluation",
+    "shortDescription": "Logical expressions stop evaluating as soon as the result is determined. In &&, if the left side is falsy the right side is never evaluated. In ||, if the left side is truthy the right side is skipped. Useful for defaults and guard clauses.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["operators"]
+  },
+  {
+    "topic": "Async vs defer",
+    "shortDescription": "Both download the script without blocking HTML parsing. async executes the script immediately when downloaded (order not guaranteed). defer executes after the document is fully parsed, in source order.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["performance", "DOM"]
+  },
+  {
+    "topic": "Functional programming and side effects",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functional programming"]
+  },
+  {
+    "topic": "preventDefault vs stopPropagation",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["events"]
+  },
+  {
+    "topic": "object prototypes",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "template literal",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "temporal dead zone",
+    "shortDescription": "The period between entering a scope and the point where a let or const variable is declared. Accessing the variable in this window throws a ReferenceError.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["scope", "variables"]
+  },
+  {
+    "topic": "for...of",
+    "shortDescription": "Iterates over the values of any iterable (arrays, strings, Maps, Sets, generators). Cannot iterate over plain objects directly.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["iteration"]
+  },
+  {
+    "topic": "for...in",
+    "shortDescription": "Iterates over the enumerable property keys of an object, including inherited ones. Avoid using it on arrays.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["iteration", "objects"]
+  },
+  {
+    "topic": "sparse array",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "closure in JavaScript",
+    "shortDescription": "A function that retains access to variables from its outer (enclosing) scope even after the outer function has finished executing.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["scope", "functions"]
+  },
+  {
+    "topic": "mixin class",
+    "shortDescription": "Expression returned from an arrow function.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Implicit Parameter",
+    "shortDescription": "The arguments object (implicit) holds all passed arguments regardless of named parameters. Rest parameters (...args) are the modern explicit alternative.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions"]
+  },
+  {
+    "topic": "Currying",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functional programming"]
+  },
+  {
+    "topic": "error vs exception in JavaScript",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "argument vs parameter",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions"]
+  },
+  {
+    "topic": "event delegation in JavaScript",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["events", "DOM"]
+  },
+  {
+    "topic": "First-class functions",
+    "shortDescription": "Functions are treated as values: they can be assigned to variables, passed as arguments, and returned from other functions.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions", "functional programming"]
+  },
+  {
+    "topic": "Dynamic typing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["types"]
+  },
+  {
+    "topic": "Prototype inheritance",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["prototype"]
+  },
+  {
+    "topic": "ecmascript",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "ES5 benefits",
+    "shortDescription": "Introduced JSON support, strict mode, and new Array/Object methods (forEach, map, filter, reduce, Object.keys).",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "ES6",
+    "shortDescription": "Major update introducing Promises, let/const, arrow functions, spread/rest syntax, destructuring, classes, template literals, and ES modules.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "rollup vs babel vs webpack",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["tooling"]
+  },
+  {
+    "topic": "How JavaScript Works",
+    "shortDescription": "When a JS program runs, the engine allocates memory on RAM for variables and objects, and uses a CPU thread to execute instructions. JS is high-level, meaning it abstracts away direct memory and thread management.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["runtime"]
+  },
+  {
+    "topic": "Event Loop",
+    "shortDescription": "Synchronous code runs first. Then microtasks (Promise callbacks, MutationObserver) drain completely. Then macrotasks (setTimeout, setInterval, I/O) run one at a time. After each macrotask, microtasks drain again before rendering.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["async", "runtime"]
+  },
+  {
+    "topic": "Functions",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Function declaration vs expression",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions"]
+  },
+  {
+    "topic": "Babel",
+    "shortDescription": "TODO",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["tooling"]
+  },
+  {
+    "topic": "Polyfill",
+    "shortDescription": "TODO",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "Lexical structure",
+    "shortDescription": "",
+    "longDescription": "Covers hashbang comments, identifiers (names used to link values), and reserved words that cannot be used as variable names.",
+    "mainCategory": "JavaScript",
+    "tags": []
+  },
+  {
+    "topic": "function vs method",
+    "shortDescription": "A function is a standalone reusable block of code. A method is a function that is a property of an object and operates in the context of that object (via this).",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions", "objects"]
+  },
+  {
+    "topic": "bind vs apply vs call",
+    "shortDescription": "All three set the value of this. call(thisArg, arg1, arg2) invokes immediately with individual args. apply(thisArg, [args]) invokes immediately with an array. bind(thisArg) returns a new function with this permanently bound.",
+    "longDescription": "",
+    "mainCategory": "JavaScript",
+    "tags": ["functions", "this"]
+  }
+]
