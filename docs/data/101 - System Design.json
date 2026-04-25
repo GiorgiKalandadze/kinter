@@ -1,0 +1,849 @@
+[
+  {
+    "topic": "A/B Testing",
+    "shortDescription": "An experiment where two or more variants are shown to users at random and statistical analysis determines which performs better for a given goal.",
+    "longDescription": "A/B testing compares variations of a feature, page, or design to determine which performs better for a specific metric such as conversion rate or engagement. Variants are shown to users at random and statistical significance is measured before concluding a winner. It enables data-driven decisions and continuous improvement based on real user behaviour.",
+    "mainCategory": "System Design",
+    "tags": ["experimentation", "UX"]
+  },
+  {
+    "topic": "ACID Properties",
+    "shortDescription": "Four guarantees for database transactions: Atomicity (all-or-nothing), Consistency (valid state before and after), Isolation (concurrent transactions don't interfere), Durability (committed data survives failures).",
+    "longDescription": "ACID is the foundation of reliable transactional databases. Atomicity ensures a transaction either fully completes or fully rolls back. Consistency guarantees the database remains in a valid state. Isolation prevents concurrent transactions from seeing each other's intermediate state. Durability means committed changes survive crashes, typically via write-ahead logging.",
+    "mainCategory": "System Design",
+    "tags": ["transactions", "databases", "consistency"]
+  },
+  {
+    "topic": "API Architecture Styles",
+    "shortDescription": "SOAP (XML, enterprise), REST (resource-based, HTTP verbs), GraphQL (client-specified queries), gRPC (binary Protocol Buffers, fast), WebSocket (full-duplex real-time), Webhook (server-push on events).",
+    "longDescription": "Each style suits different needs. REST is the most widely used for public APIs. GraphQL shines when clients need flexible data shapes. gRPC is preferred for internal microservice communication due to its speed and strong typing. WebSockets are necessary for real-time features. Webhooks are used for event-driven integrations.",
+    "mainCategory": "System Design",
+    "tags": ["REST", "GraphQL", "gRPC", "WebSocket", "API"]
+  },
+  {
+    "topic": "API Gateway",
+    "shortDescription": "A single entry point for client requests that handles routing, authentication, rate limiting, and data transformation before forwarding to backend services.",
+    "longDescription": "An API Gateway abstracts the complexity of a microservices backend from clients. It centralises cross-cutting concerns: auth, rate limiting, request/response transformation, SSL termination, and logging. This reduces duplication across services and simplifies client code. Common implementations: AWS API Gateway, Kong, Nginx, Traefik.",
+    "mainCategory": "System Design",
+    "tags": ["microservices", "routing", "authentication"]
+  },
+  {
+    "topic": "API Pagination",
+    "shortDescription": "Dividing large result sets into pages to avoid overwhelming clients and servers. Main approaches: page + offset (simple but slow at high offsets) and cursor-based (efficient for large, dynamic datasets).",
+    "longDescription": "Offset pagination uses LIMIT/OFFSET — simple but performance degrades as offset grows because the DB must scan and discard rows. Cursor-based pagination uses an opaque pointer (usually the last seen ID or timestamp) as the anchor for the next page — consistent and efficient even on dynamic data. Keyset pagination is a variant of cursor-based using indexed columns.",
+    "mainCategory": "System Design",
+    "tags": ["pagination", "API", "databases"]
+  },
+  {
+    "topic": "Attribute-Based Access Control (ABAC)",
+    "shortDescription": "Access control model that evaluates combinations of user, resource, and environment attributes to make fine-grained authorization decisions, rather than relying on roles alone.",
+    "longDescription": "ABAC is more flexible than RBAC because access decisions can depend on context: time of day, location, resource sensitivity, or any combination of attributes. This makes it suitable for complex systems like healthcare or finance. The downside is higher complexity in defining and auditing policies.",
+    "mainCategory": "System Design",
+    "tags": ["access control", "security", "authorization"]
+  },
+  {
+    "topic": "Auto-scaling",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["scaling", "cloud"]
+  },
+  {
+    "topic": "Backup Strategies",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "BASE Properties",
+    "shortDescription": "Design philosophy for distributed systems: Basically Available (system stays up), Soft state (state may change without input), Eventually consistent (data converges to consistency over time). Contrasts with ACID.",
+    "longDescription": "BASE accepts weaker consistency guarantees in exchange for higher availability and partition tolerance. It is the foundation of most NoSQL databases. 'Basically Available' means the system returns a response even during partial failures. 'Soft state' reflects that cached or replicated state can be stale. 'Eventually consistent' means all replicas will converge given enough time and no new updates.",
+    "mainCategory": "System Design",
+    "tags": ["distributed systems", "consistency", "NoSQL"]
+  },
+  {
+    "topic": "Blue-Green Deployment",
+    "shortDescription": "Two identical production environments (Blue = live, Green = new version). Traffic is switched atomically from Blue to Green. If issues arise, switch back instantly.",
+    "longDescription": "Blue-Green deployment achieves zero-downtime releases. The new version is fully deployed and tested in the Green environment before any production traffic hits it. The switch is a single load-balancer change. Rollback is equally instant. The main cost is running two full production environments simultaneously.",
+    "mainCategory": "System Design",
+    "tags": ["deployment", "zero-downtime", "rollback"]
+  },
+  {
+    "topic": "Caching",
+    "shortDescription": "Storing frequently accessed data in a faster medium (usually memory) to reduce latency and load on primary data sources.",
+    "longDescription": "Cache layers can exist at multiple levels: browser, CDN, reverse proxy, application (Redis, Memcached), and database query cache. Key considerations: cache invalidation strategy (TTL, event-driven, write-through, write-behind), eviction policies (LRU, LFU, FIFO), and cache stampede prevention. The hardest problems are knowing when to invalidate and handling consistency with the source of truth.",
+    "mainCategory": "System Design",
+    "tags": ["Redis", "Memcached", "performance", "eviction policies"]
+  },
+  {
+    "topic": "Canary Deployment",
+    "shortDescription": "Gradually roll out a new version to a small subset of users before expanding to everyone. Monitor error rates and latency; roll back immediately if metrics degrade.",
+    "longDescription": "Canary releases reduce risk by limiting blast radius. Typically, 1–5% of traffic goes to the new version first. Automated rollback can be triggered by alerting thresholds. Feature flags are a related technique that decouples deployment from release.",
+    "mainCategory": "System Design",
+    "tags": ["deployment", "rollback", "monitoring"]
+  },
+  {
+    "topic": "CAP Theorem",
+    "shortDescription": "A distributed system can guarantee at most two of three properties simultaneously: Consistency (every read sees the latest write), Availability (every request gets a response), Partition Tolerance (system works despite network partitions).",
+    "longDescription": "In practice, network partitions always occur, so the real choice is between CP (consistency during partitions, may reject requests) and AP (availability during partitions, may return stale data). Examples: HBase is CP; Cassandra is AP. The theorem applies to single operations, not entire databases — modern systems often provide tunable consistency levels.",
+    "mainCategory": "System Design",
+    "tags": ["distributed systems", "consistency", "availability"]
+  },
+  {
+    "topic": "Chaos Engineering",
+    "shortDescription": "Deliberately injecting failures into a system in production-like conditions to discover weaknesses before they cause real outages.",
+    "longDescription": "Popularised by Netflix's Chaos Monkey. The process: define a steady state (baseline metrics), hypothesise the system will maintain it under failure, introduce failures (kill instances, throttle network, spike CPU), and observe. If the hypothesis holds, confidence increases. If not, you've found a real weakness. Tools: Chaos Monkey, Gremlin, LitmusChaos.",
+    "mainCategory": "System Design",
+    "tags": ["resilience", "fault injection", "testing"]
+  },
+  {
+    "topic": "Circuit Breaker Pattern",
+    "shortDescription": "Wraps calls to a failing service and stops sending requests once failures exceed a threshold. After a timeout, allows a probe request through. If it succeeds, the circuit closes; if not, it stays open.",
+    "longDescription": "Three states: Closed (requests flow normally), Open (all requests fail fast without hitting the downstream), Half-Open (one probe request is allowed to test recovery). Prevents cascading failures in distributed systems and gives failing services time to recover. Often combined with retry logic and timeouts.",
+    "mainCategory": "System Design",
+    "tags": ["resilience", "distributed systems", "fault tolerance"]
+  },
+  {
+    "topic": "Cloud Computing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Command Query Responsibility Segregation (CQRS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture", "databases"]
+  },
+  {
+    "topic": "Containerization",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["Docker", "DevOps"]
+  },
+  {
+    "topic": "Content Delivery Network (CDN)",
+    "shortDescription": "Geographically distributed network of servers that cache and deliver content from locations close to users, reducing latency and origin server load.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["performance", "caching", "networking"]
+  },
+  {
+    "topic": "Continuous Deployment (CD)",
+    "shortDescription": "Every code change that passes automated tests is automatically deployed to production. Requires high test coverage and confidence in the pipeline.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["CI/CD", "DevOps"]
+  },
+  {
+    "topic": "Continuous Integration (CI)",
+    "shortDescription": "Developers frequently merge code changes into a shared repository, where automated builds and tests verify each integration. Finds integration bugs early.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["CI/CD", "DevOps"]
+  },
+  {
+    "topic": "Data Consistency",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["databases", "distributed systems"]
+  },
+  {
+    "topic": "Data Governance",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Data Lake",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Data Lineage",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Data Pipeline",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Data Privacy Regulations (GDPR, CCPA)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["compliance", "security"]
+  },
+  {
+    "topic": "Data Quality",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Data Replication",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["databases", "distributed systems"]
+  },
+  {
+    "topic": "Data Warehouse",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Database Partitioning",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["databases", "scaling"]
+  },
+  {
+    "topic": "Database Sharding",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["databases", "scaling", "resharding", "hot key"]
+  },
+  {
+    "topic": "DevOps Practices",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Disaster Recovery",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["availability", "reliability"]
+  },
+  {
+    "topic": "Distributed Systems",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Distributed Transactions",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["distributed systems", "transactions"]
+  },
+  {
+    "topic": "Docker",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["containers", "DevOps"]
+  },
+  {
+    "topic": "Domain-Driven Design (DDD)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture"]
+  },
+  {
+    "topic": "Edge Computing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["networking", "performance"]
+  },
+  {
+    "topic": "ELT (Extract, Load, Transform)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["data engineering"]
+  },
+  {
+    "topic": "Encryption at Rest",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "encryption"]
+  },
+  {
+    "topic": "Encryption in Transit",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "TLS", "encryption"]
+  },
+  {
+    "topic": "ETag",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["HTTP", "caching"]
+  },
+  {
+    "topic": "ETL (Extract, Transform, Load)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["data engineering"]
+  },
+  {
+    "topic": "Event Sourcing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture", "databases"]
+  },
+  {
+    "topic": "Event-Driven Architecture",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture", "messaging"]
+  },
+  {
+    "topic": "Eventual Consistency",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["distributed systems", "consistency"]
+  },
+  {
+    "topic": "Failover Strategies",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["availability", "reliability"]
+  },
+  {
+    "topic": "Firewall Configurations",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "networking"]
+  },
+  {
+    "topic": "Function as a Service (FaaS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["serverless", "cloud"]
+  },
+  {
+    "topic": "GraphQL",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["API"]
+  },
+  {
+    "topic": "gRPC",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["API", "microservices"]
+  },
+  {
+    "topic": "Hashing",
+    "shortDescription": "A hash function maps data of arbitrary size to a fixed-size value. Used for data lookup (hash tables), integrity checks, and consistent hashing in distributed systems.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["consistent hashing", "hash ring", "collision"]
+  },
+  {
+    "topic": "Health Checks",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["monitoring", "availability"]
+  },
+  {
+    "topic": "High Availability (HA)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["reliability", "uptime"]
+  },
+  {
+    "topic": "Horizontal Scaling",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["scaling"]
+  },
+  {
+    "topic": "Hybrid Cloud",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud"]
+  },
+  {
+    "topic": "Identity and Access Management (IAM)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "access control"]
+  },
+  {
+    "topic": "Infrastructure as a Service (IaaS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud"]
+  },
+  {
+    "topic": "Infrastructure as Code (IaC)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["DevOps", "cloud"]
+  },
+  {
+    "topic": "Intrusion Detection Systems (IDS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "monitoring"]
+  },
+  {
+    "topic": "Intrusion Prevention Systems (IPS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security"]
+  },
+  {
+    "topic": "JWT Tokens",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "security"]
+  },
+  {
+    "topic": "Key-Value Store",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["databases", "CAP theorem", "vector clock", "gossip protocol"]
+  },
+  {
+    "topic": "Kubernetes",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["containers", "orchestration", "DevOps"]
+  },
+  {
+    "topic": "Latency Optimization",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["performance"]
+  },
+  {
+    "topic": "Least Privilege Principle",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "access control"]
+  },
+  {
+    "topic": "Load Balancing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["scaling", "availability", "sticky sessions"]
+  },
+  {
+    "topic": "Load Shedding",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["resilience", "performance"]
+  },
+  {
+    "topic": "Load Testing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["testing", "performance"]
+  },
+  {
+    "topic": "Master Data Management (MDM)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Message Queues",
+    "shortDescription": "A durable buffer for asynchronous communication between services. Producers publish messages; consumers read and process them independently. Decouples services and absorbs traffic spikes.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["RabbitMQ", "Kafka", "SQS", "messaging", "async"]
+  },
+  {
+    "topic": "Microsegmentation",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "networking"]
+  },
+  {
+    "topic": "Microservices",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture"]
+  },
+  {
+    "topic": "Monitoring and Logging",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["observability"]
+  },
+  {
+    "topic": "Monolithic Architecture",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture"]
+  },
+  {
+    "topic": "Multi-Cloud Strategy",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud"]
+  },
+  {
+    "topic": "Network Segmentation",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "networking"]
+  },
+  {
+    "topic": "OAuth",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "authorization", "security"]
+  },
+  {
+    "topic": "Observability",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["monitoring", "logging", "tracing"]
+  },
+  {
+    "topic": "OpenID Connect",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "security"]
+  },
+  {
+    "topic": "Penetration Testing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "testing"]
+  },
+  {
+    "topic": "Performance Testing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["testing", "performance"]
+  },
+  {
+    "topic": "Platform as a Service (PaaS)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud"]
+  },
+  {
+    "topic": "Public Key Infrastructure (PKI)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "encryption", "TLS"]
+  },
+  {
+    "topic": "Publish/Subscribe Model",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["messaging", "architecture"]
+  },
+  {
+    "topic": "Rate Limiting",
+    "shortDescription": "Controls how many requests a client can make within a time window. Returns HTTP 429 when exceeded. Common algorithms: token bucket, leaky bucket, fixed window counter, sliding window.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["token bucket", "leaky bucket", "sliding window", "API", "security"]
+  },
+  {
+    "topic": "Redis Pub/Sub",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["Redis", "messaging"]
+  },
+  {
+    "topic": "Registry and Discovery Patterns",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["microservices"]
+  },
+  {
+    "topic": "Resilience Testing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["testing", "reliability"]
+  },
+  {
+    "topic": "REST APIs",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["API", "HTTP"]
+  },
+  {
+    "topic": "Role-Based Access Control (RBAC) vs. DAC vs. ABAC",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["access control", "security", "authorization"]
+  },
+  {
+    "topic": "Rolling Updates",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["deployment", "DevOps"]
+  },
+  {
+    "topic": "SAML",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "SSO", "security"]
+  },
+  {
+    "topic": "Scalability",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": []
+  },
+  {
+    "topic": "Security Best Practices",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security"]
+  },
+  {
+    "topic": "Security Information and Event Management (SIEM)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "monitoring"]
+  },
+  {
+    "topic": "Serverless Architecture",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud", "FaaS"]
+  },
+  {
+    "topic": "Service Discovery",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["microservices"]
+  },
+  {
+    "topic": "Service Mesh",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["microservices", "networking"]
+  },
+  {
+    "topic": "Service-Oriented Architecture (SOA)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["architecture"]
+  },
+  {
+    "topic": "Single Sign-On (SSO)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "security"]
+  },
+  {
+    "topic": "SSL/TLS",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "encryption", "HTTPS"]
+  },
+  {
+    "topic": "Staged / Gradual Rollout",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["deployment"]
+  },
+  {
+    "topic": "Stress Testing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["testing", "performance"]
+  },
+  {
+    "topic": "Telemetry",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["monitoring", "observability"]
+  },
+  {
+    "topic": "Throttling",
+    "shortDescription": "Dynamically slowing down or blocking requests based on current system conditions, as opposed to rate limiting which enforces a fixed quota.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["API", "performance", "resilience"]
+  },
+  {
+    "topic": "Tracing",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["observability", "distributed systems"]
+  },
+  {
+    "topic": "URL Shortener",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["consistent hashing", "301", "302"]
+  },
+  {
+    "topic": "Vertical Scaling",
+    "shortDescription": "Scaling up — increasing the capacity of a single server by adding more CPU, RAM, or storage. Simpler than horizontal scaling but has an upper limit and introduces a single point of failure.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["scaling"]
+  },
+  {
+    "topic": "Virtual Private Cloud (VPC)",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["cloud", "networking", "security"]
+  },
+  {
+    "topic": "Virtual Private Network (VPN)",
+    "shortDescription": "Creates an encrypted tunnel over a public network, allowing secure remote access to private resources and masking the user's IP address.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security", "networking"]
+  },
+  {
+    "topic": "Vulnerability Scanning",
+    "shortDescription": "",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["security"]
+  },
+  {
+    "topic": "Session-based vs. Token-based Authentication",
+    "shortDescription": "Session-based stores state server-side and uses a cookie with a session ID. Token-based (JWT) is stateless — the client holds the token and the server verifies it without a store. Token-based scales better; session-based is easier to invalidate.",
+    "longDescription": "Session-based authentication requires server-side session storage (in-memory or Redis), which is a scaling concern in distributed systems. Token-based auth (JWT) puts the payload in the token itself, so any server that knows the signing secret can verify it. The trade-off is that JWTs cannot be invalidated before expiry without a denylist, which reintroduces state.",
+    "mainCategory": "System Design",
+    "tags": ["authentication", "JWT", "sessions", "security"]
+  },
+  {
+    "topic": "Proxy vs. Forward Proxy vs. Reverse Proxy vs. Load Balancer",
+    "shortDescription": "Proxy: any intermediary between client and server. Forward proxy: sits in front of clients, hides the client (used for filtering, privacy). Reverse proxy: sits in front of servers, hides the server (used for SSL termination, caching, routing). Load balancer: a reverse proxy that distributes requests across multiple backend instances.",
+    "longDescription": "",
+    "mainCategory": "System Design",
+    "tags": ["networking", "load balancing", "security"]
+  },
+  {
+    "topic": "SSL Termination",
+    "shortDescription": "Decrypting HTTPS traffic at a load balancer or reverse proxy instead of the application server. Centralises certificate management and reduces cryptographic overhead on backend services.",
+    "longDescription": "After decryption at the termination point, traffic travels to backends over HTTP (within a trusted internal network) or is re-encrypted. SSL termination is standard in cloud architectures, Kubernetes ingress setups, and microservices. It simplifies certificate rotation since only one component needs updating.",
+    "mainCategory": "System Design",
+    "tags": ["security", "load balancing", "TLS"]
+  },
+  {
+    "topic": "IP Whitelisting",
+    "shortDescription": "A security control that allows traffic only from pre-approved IP addresses or ranges, blocking everything else by default.",
+    "longDescription": "Used to protect internal services, admin endpoints, and APIs. Effective at reducing attack surface but requires careful management in dynamic environments (cloud autoscaling, remote workers). Often combined with VPNs or Zero Trust approaches.",
+    "mainCategory": "System Design",
+    "tags": ["security", "access control", "networking"]
+  },
+  {
+    "topic": "Web Application Firewall (WAF)",
+    "shortDescription": "A security layer that inspects HTTP/HTTPS traffic and blocks malicious requests targeting web application vulnerabilities (SQL injection, XSS, CSRF, OWASP Top 10). Operates at OSI Layer 7.",
+    "longDescription": "WAFs can be deployed as cloud services (AWS WAF, Cloudflare), reverse proxies, or modules within a web server. They apply rule sets to incoming requests and can block, rate-limit, or challenge suspicious traffic without modifying application code.",
+    "mainCategory": "System Design",
+    "tags": ["security", "OWASP", "networking"]
+  },
+  {
+    "topic": "Network Firewall",
+    "shortDescription": "Monitors and filters network traffic at OSI Layer 3 (IP) and Layer 4 (TCP/UDP) based on source/destination IP, port, protocol, and connection state.",
+    "longDescription": "Network firewalls enforce perimeter security and segment internal networks. They block unauthorized access based on static rules or stateful inspection of connection state. Modern next-generation firewalls (NGFW) also include application awareness and deep packet inspection.",
+    "mainCategory": "System Design",
+    "tags": ["security", "networking"]
+  },
+  {
+    "topic": "HAProxy",
+    "shortDescription": "High-performance open-source load balancer and reverse proxy operating at Layer 4 (TCP) and Layer 7 (HTTP). Widely used for distributing traffic, SSL termination, health checks, and connection pooling.",
+    "longDescription": "HAProxy supports advanced routing rules, sticky sessions, rate limiting, and rich observability metrics. It is battle-tested at very high scale and commonly deployed in front of web applications and microservices in production and banking-grade infrastructure.",
+    "mainCategory": "System Design",
+    "tags": ["load balancing", "high availability", "networking"]
+  },
+  {
+    "topic": "Design a Unique ID Generator in Distributed Systems",
+    "shortDescription": "For a 64-bit sortable numeric ID across multiple nodes, the Twitter Snowflake approach is preferred: timestamp bits + worker ID bits + sequence counter. Gives time-ordered IDs without a single point of failure.",
+    "longDescription": "Alternatives: UUID (128-bit, not naturally sortable), Multi-master replication with auto-increment offsets (coordination overhead), Ticket Server (centralized, SPOF). Snowflake partitions 64 bits as: 1 sign bit, 41 bits timestamp (ms since epoch), 10 bits machine ID, 12 bits sequence. This allows 4096 IDs per millisecond per machine. Clock synchronization (NTP) is critical — clock drift can cause duplicate IDs.",
+    "mainCategory": "System Design",
+    "tags": ["distributed systems", "Snowflake", "UUID", "scalability"]
+  }
+]

@@ -1,0 +1,527 @@
+[
+  {
+    "topic": "What is Node.js",
+    "shortDescription": "An open-source, cross-platform JavaScript runtime built on Chrome's V8 engine. It uses an event-driven, non-blocking I/O model, making it lightweight and efficient for data-intensive real-time applications.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["V8", "libuv", "runtime"]
+  },
+  {
+    "topic": "Why is networking in Node.js more scalable than file system I/O?",
+    "shortDescription": "Networking is truly asynchronous at the OS level (epoll on Linux, kqueue on macOS, IOCP on Windows) — Node handles thousands of concurrent connections on a single thread. File I/O uses the libuv thread pool (default 4 threads), so only 4 heavy file operations can run in parallel before others queue.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["libuv", "I/O", "scalability"]
+  },
+  {
+    "topic": "If Node.js is single-threaded, how can it use a multi-core CPU?",
+    "shortDescription": "The JavaScript event loop is single-threaded, but libuv uses its thread pool for I/O and crypto. To run JS logic on all cores, use the cluster module (multiple processes, each with its own event loop) or worker_threads (true threads sharing memory).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["cluster", "worker_threads", "libuv"]
+  },
+  {
+    "topic": "Does setTimeout(fn, 10) use a libuv thread?",
+    "shortDescription": "No. Timers are managed directly by the event loop. libuv stores timers in a min-heap; each loop iteration checks the heap and fires any expired timers on the main thread. No background thread is involved.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["timers", "event loop", "libuv"]
+  },
+  {
+    "topic": "When does Node run a libuv callback after an async task completes?",
+    "shortDescription": "Node follows a run-to-completion model — callbacks only execute when the call stack is completely empty. Even if libuv finishes a task, its callback waits in the queue until the current synchronous code finishes.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "libuv", "callbacks"]
+  },
+  {
+    "topic": "How does the event loop handle setTimeout and setInterval callbacks?",
+    "shortDescription": "Timer callbacks are processed in the Timers phase of the event loop. libuv stores them in a min-heap by expiry time. Each loop tick checks the heap and moves expired timer callbacks to the execution queue for that phase.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["timers", "event loop"]
+  },
+  {
+    "topic": "If setTimeout and readFile complete simultaneously, which callback runs first?",
+    "shortDescription": "The event loop's phase order decides: the Timers phase runs before the Poll phase (where I/O like readFile is processed). So the setTimeout callback generally executes first.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "timers", "I/O"]
+  },
+  {
+    "topic": "process.nextTick",
+    "shortDescription": "Schedules a callback to run immediately after the current operation, before the event loop advances to any of its 6 phases and before the Promise microtask queue. Used to ensure API consistency and to let EventEmitters emit safely after listeners are attached.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "microtasks"]
+  },
+  {
+    "topic": "setTimeout(0) vs. setImmediate()",
+    "shortDescription": "In the main module their order is non-deterministic (depends on a 1ms timer threshold). Inside an I/O callback, setImmediate always runs first because the Check phase follows immediately after the Poll phase. Note: setTimeout(fn, 0) is actually setTimeout(fn, 1).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "timers"]
+  },
+  {
+    "topic": "UV_THREADPOOL_SIZE and its performance trade-offs",
+    "shortDescription": "Node offloads crypto and fs to libuv's thread pool. Increasing UV_THREADPOOL_SIZE raises concurrency for those tasks, but too many threads can degrade performance due to CPU context-switching overhead, thread contention, and hardware I/O bottlenecks.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["libuv", "performance", "crypto", "fs"]
+  },
+  {
+    "topic": "Browser vs. Node.js event loop",
+    "shortDescription": "The browser event loop is optimized for UI rendering: Macrotask → Microtasks → Render. The Node.js event loop (powered by libuv) has six phases (Timers, I/O, Idle, Poll, Check, Close) and a unique process.nextTick queue that runs before standard Promises.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "browser"]
+  },
+  {
+    "topic": "CommonJS vs. ES Modules",
+    "shortDescription": "CommonJS (require / module.exports) is Node's legacy synchronous module system. ES Modules (import / export) is the standardized modern system — static, supports tree-shaking and async loading. Node supports both but they cannot be freely mixed.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["modules", "ESM", "CommonJS"]
+  },
+  {
+    "topic": "module.exports vs. exports",
+    "shortDescription": "module.exports is the actual object returned by require(). exports is just a shorthand reference to it. Reassigning exports directly (exports = ...) breaks the reference and results in an empty export — always reassign module.exports instead.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["modules", "CommonJS"]
+  },
+  {
+    "topic": "ECMAScript and Node.green",
+    "shortDescription": "ECMAScript is the spec JavaScript follows. Node.green is a compatibility table tracking which Node.js versions support specific ECMAScript features, helping developers know what syntax they can use without Babel.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["ECMAScript", "compatibility"]
+  },
+  {
+    "topic": "Node.js inspection and debugging",
+    "shortDescription": "Node uses the V8 Inspector protocol. Start with --inspect (attach debugger) or --inspect-brk (pause at first line). Chrome DevTools or VS Code can then connect to set breakpoints, step through code, and inspect the heap.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["debugging", "V8"]
+  },
+  {
+    "topic": "Axios vs. Got vs. Undici",
+    "shortDescription": "Axios: most popular, works in browser and Node, automatic JSON parsing and interceptors. Got: Node-only, strong retry logic and HTTP/2 support. Undici: powers Node's native fetch, highest raw throughput, best for microservices when used directly.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["HTTP", "networking"]
+  },
+  {
+    "topic": "EventEmitter internals and synchronous execution",
+    "shortDescription": "EventEmitter stores listeners in a _events object keyed by event name. When emit() is called, Node synchronously invokes all listeners on the current call stack — it does not defer to the event loop. This means a slow listener blocks the entire emit.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["EventEmitter", "events"]
+  },
+  {
+    "topic": "fs callbacks vs. fs/promises",
+    "shortDescription": "The fs module uses direct C++ bindings with callbacks — minimal object allocation. fs/promises wraps each operation in a Promise object, increasing memory overhead and adding microtask queue latency. The trade-off is cleaner syntax and easier error handling with async/await.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["fs", "performance", "promises"]
+  },
+  {
+    "topic": "Higher-order functions",
+    "shortDescription": "A function that takes one or more functions as arguments or returns a function. Possible because JavaScript treats functions as first-class citizens.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["functions", "functional programming"]
+  },
+  {
+    "topic": "Runtime",
+    "shortDescription": "The period when a program is actively executing — when code runs and interacts with memory and I/O, as opposed to being compiled or written. Also refers to the runtime environment (e.g. Node.js, JVM) that provides resources for execution.",
+    "longDescription": "Runtime errors occur during this phase when the program encounters unexpected conditions. The runtime environment manages memory allocation, garbage collection, I/O, and OS interactions — things the developer does not need to handle manually in high-level languages like JavaScript.",
+    "mainCategory": "Node.js",
+    "tags": ["runtime"]
+  },
+  {
+    "topic": "V8",
+    "shortDescription": "Google's open-source JavaScript and WebAssembly engine (written in C++) that powers Chrome and Node.js. It compiles JS directly to native machine code using JIT compilation.",
+    "longDescription": "V8 handles memory management, garbage collection, and performance optimisations like inline caching and hidden classes. It makes JavaScript fast enough for server-side use. Node.js embeds V8 and adds APIs for file system, networking, and OS access that browsers do not expose.",
+    "mainCategory": "Node.js",
+    "tags": ["V8", "runtime", "JIT"]
+  },
+  {
+    "topic": "Event Loop",
+    "shortDescription": "Manages async operations by continuously cycling through six phases: Timers → I/O callbacks → Idle/Prepare → Poll → Check (setImmediate) → Close callbacks.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["event loop", "async"]
+  },
+  {
+    "topic": "Single-threaded",
+    "shortDescription": "Node.js runs JavaScript on a single thread. Long-running synchronous operations block all I/O. Async patterns and the event loop exist to keep this single thread free.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["architecture"]
+  },
+  {
+    "topic": "Non-blocking I/O",
+    "shortDescription": "I/O operations (network, disk) are initiated and the thread is immediately freed to handle other work. A callback or Promise is used to receive the result when it is ready.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["I/O", "async", "architecture"]
+  },
+  {
+    "topic": "Asynchronous programming",
+    "shortDescription": "A pattern for handling I/O-bound operations without blocking the thread. In Node.js this is done via callbacks, Promises, or async/await on top of the event loop.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["async"]
+  },
+  {
+    "topic": "NPM",
+    "shortDescription": "Node Package Manager — the default package registry and CLI for installing, publishing, and managing JavaScript packages and project dependencies.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["tooling", "packages"]
+  },
+  {
+    "topic": "Modules",
+    "shortDescription": "Self-contained units of code that encapsulate functionality and expose a public API. Node supports CommonJS (require) and ES Modules (import).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["modules"]
+  },
+  {
+    "topic": "require()",
+    "shortDescription": "CommonJS function that synchronously loads a module, executes it, and returns its module.exports. The result is cached after the first load.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["modules", "CommonJS"]
+  },
+  {
+    "topic": "module.exports",
+    "shortDescription": "The object a CommonJS module exposes when required. Assign the value you want to export directly to module.exports.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["modules", "CommonJS"]
+  },
+  {
+    "topic": "package.json",
+    "shortDescription": "The manifest file for a Node.js project. Defines the project name, version, entry point, scripts, dependencies, and devDependencies.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["tooling", "packages"]
+  },
+  {
+    "topic": "package-lock.json",
+    "shortDescription": "Auto-generated file that records the exact version tree of every installed dependency. Ensures reproducible installs across machines and CI environments.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["tooling", "packages"]
+  },
+  {
+    "topic": "Node core libraries",
+    "shortDescription": "Built-in modules included with Node: fs (file system), http/https, path, os, crypto, stream, events, child_process, cluster, process, url, buffer, timers.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["core modules"]
+  },
+  {
+    "topic": "EventEmitter",
+    "shortDescription": "Node's built-in class for implementing the observer/publish-subscribe pattern. Use on() to register listeners and emit() to trigger them synchronously.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["events", "EventEmitter"]
+  },
+  {
+    "topic": "Callbacks",
+    "shortDescription": "Functions passed as arguments to be called when an async operation completes. The Node.js convention is error-first: callback(error, result).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["async", "callbacks"]
+  },
+  {
+    "topic": "Promises",
+    "shortDescription": "An object representing the eventual completion or failure of an async operation. Provides .then() for success, .catch() for errors, and .finally() for cleanup.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["async", "promises"]
+  },
+  {
+    "topic": "Async/Await",
+    "shortDescription": "Syntactic sugar over Promises. async functions always return a Promise. await pauses execution inside the function until the Promise resolves, without blocking the event loop.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["async", "promises"]
+  },
+  {
+    "topic": "Streams",
+    "shortDescription": "Objects for reading or writing data piece-by-piece instead of loading it all into memory. Types: Readable, Writable, Duplex (both), Transform (modifies data in transit).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["streams", "I/O", "performance"]
+  },
+  {
+    "topic": "Buffer",
+    "shortDescription": "A fixed-size chunk of memory outside the V8 heap, used to handle binary data (file reads, network packets, crypto). Represented as a sequence of bytes.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["binary", "memory"]
+  },
+  {
+    "topic": "Express.js",
+    "shortDescription": "A minimal, unopinionated web framework for Node.js. Provides routing, middleware support, and thin wrappers around Node's http module.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Express", "web framework"]
+  },
+  {
+    "topic": "Middlewares",
+    "shortDescription": "Functions with signature (req, res, next) that process a request in sequence. Each middleware either ends the cycle (sends a response) or calls next() to pass control forward.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Express", "middleware"]
+  },
+  {
+    "topic": "Routing",
+    "shortDescription": "Mapping HTTP methods and URL paths to handler functions. In Express: app.get('/path', handler) or router.post('/path', handler).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Express", "routing"]
+  },
+  {
+    "topic": "API development",
+    "shortDescription": "Building interfaces that allow software systems to communicate, typically over HTTP using REST or GraphQL.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["API", "REST"]
+  },
+  {
+    "topic": "Error handling",
+    "shortDescription": "In Express, error-handling middleware has four arguments (err, req, res, next) and is registered last. For async routes, errors must be explicitly passed to next(err).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["error handling"]
+  },
+  {
+    "topic": "Environment variables",
+    "shortDescription": "Key-value pairs set outside the application to control behaviour — used for secrets, database URLs, and feature flags. Access via process.env.VAR_NAME. Never commit .env files to version control.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["configuration", "security"]
+  },
+  {
+    "topic": "Process object",
+    "shortDescription": "A global object providing information about and control over the current Node.js process: process.env, process.argv, process.exit(), process.pid, process.cwd().",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["process", "globals"]
+  },
+  {
+    "topic": "Cluster module",
+    "shortDescription": "Allows a Node app to fork multiple worker processes (one per CPU core), each running its own event loop. The master process distributes incoming connections across workers.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["cluster", "scaling", "multi-core"]
+  },
+  {
+    "topic": "Child process",
+    "shortDescription": "The child_process module spawns subprocesses to run shell commands or other scripts. Methods: spawn (streaming), exec (buffered), fork (Node process with IPC channel).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["child_process", "processes"]
+  },
+  {
+    "topic": "File system (fs module)",
+    "shortDescription": "Provides APIs for reading, writing, deleting, and watching files and directories. Each operation has a callback version (fs.readFile), a Promise version (fs/promises.readFile), and a synchronous version (fs.readFileSync).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["fs", "I/O"]
+  },
+  {
+    "topic": "Crypto module",
+    "shortDescription": "Provides cryptographic functionality including hashes, HMACs, ciphers, key generation, and digital signatures. Offloaded to libuv thread pool so it does not block the event loop.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["crypto", "security"]
+  },
+  {
+    "topic": "Timers",
+    "shortDescription": "setTimeout and setInterval schedule callbacks. setImmediate runs after the current I/O phase. process.nextTick runs before all of them, at the end of the current operation.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["timers", "event loop"]
+  },
+  {
+    "topic": "HTTP server",
+    "shortDescription": "Created with http.createServer((req, res) => { ... }). req is a Readable stream; res is a Writable stream. Most production apps use Express or Fastify instead of the raw http module.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["HTTP", "networking"]
+  },
+  {
+    "topic": "HTTPS server",
+    "shortDescription": "Same as http.createServer but requires SSL/TLS certificates (key and cert). In production, TLS is typically terminated at the load balancer or reverse proxy rather than in the Node process.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["HTTPS", "security", "networking"]
+  },
+  {
+    "topic": "WebSockets",
+    "shortDescription": "Full-duplex communication channels over a persistent TCP connection. The WebSocket handshake starts as HTTP and upgrades. Node libraries: ws (low-level), Socket.io (higher-level with fallbacks).",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["WebSockets", "real-time", "networking"]
+  },
+  {
+    "topic": "Socket.io",
+    "shortDescription": "A library for real-time bidirectional communication. Adds rooms, namespaces, automatic reconnection, and graceful fallback to long-polling when WebSockets are unavailable.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Socket.io", "real-time", "WebSockets"]
+  },
+  {
+    "topic": "JWT authentication",
+    "shortDescription": "Stateless authentication using signed tokens. The server signs a payload with a secret or private key; the client sends the token in subsequent requests. The server verifies the signature without querying a session store.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["JWT", "authentication", "security"]
+  },
+  {
+    "topic": "OAuth",
+    "shortDescription": "Delegated authorization protocol. Allows users to grant a third-party app limited access to their account on another service without sharing their password.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["OAuth", "authentication", "security"]
+  },
+  {
+    "topic": "CORS",
+    "shortDescription": "Cross-Origin Resource Sharing — a browser security mechanism that restricts which origins can call your API. Controlled via HTTP headers (Access-Control-Allow-Origin). In Express, use the cors middleware.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["CORS", "security", "HTTP"]
+  },
+  {
+    "topic": "Helmet",
+    "shortDescription": "Express middleware that sets security-related HTTP headers (Content-Security-Policy, X-Frame-Options, HSTS, etc.) to protect against common web vulnerabilities.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Helmet", "security", "Express"]
+  },
+  {
+    "topic": "CSRF protection",
+    "shortDescription": "Cross-Site Request Forgery attacks trick a logged-in user's browser into making requests to your server. Prevented with CSRF tokens (csurf middleware) or the SameSite cookie attribute.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["CSRF", "security"]
+  },
+  {
+    "topic": "Rate limiting",
+    "shortDescription": "Restricts how many requests a client can make in a given time window. Prevents abuse and DoS. In Express, use express-rate-limit. Often also implemented at the infrastructure level.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["rate limiting", "security", "performance"]
+  },
+  {
+    "topic": "Session management",
+    "shortDescription": "Server-side sessions store user state (e.g. login) keyed by a session ID sent to the client as a cookie. In Express: express-session with a store like Redis for production.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["sessions", "authentication"]
+  },
+  {
+    "topic": "Cookies",
+    "shortDescription": "Small key-value pairs stored in the browser and sent with every matching request. Set via Set-Cookie header. Use HttpOnly to prevent JS access, Secure to require HTTPS, and SameSite to limit cross-origin sending.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["cookies", "authentication", "security"]
+  },
+  {
+    "topic": "Mongoose",
+    "shortDescription": "ODM (Object Document Mapper) for MongoDB in Node.js. Provides schema definitions, validation, middleware (hooks), and a query builder on top of the native MongoDB driver.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Mongoose", "MongoDB", "database"]
+  },
+  {
+    "topic": "Sequelize",
+    "shortDescription": "Promise-based ORM for relational databases (PostgreSQL, MySQL, SQLite, MSSQL). Provides model definitions, associations, migrations, and query building.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Sequelize", "SQL", "database"]
+  },
+  {
+    "topic": "Testing",
+    "shortDescription": "Common frameworks: Jest (all-in-one), Mocha + Chai (flexible), Vitest (fast ESM-first). Supertest is used for HTTP endpoint testing. Node 18+ has a built-in test runner.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["testing", "Jest", "Mocha"]
+  },
+  {
+    "topic": "Debugging",
+    "shortDescription": "Use --inspect or --inspect-brk flags, then connect Chrome DevTools or VS Code. console.log is a last resort. node --trace-warnings helps trace deprecation sources.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["debugging"]
+  },
+  {
+    "topic": "Memory management",
+    "shortDescription": "V8 manages the heap with a generational garbage collector (Scavenger for short-lived objects, Mark-Sweep/Compact for long-lived ones). Heap size is limited (~1.5 GB by default). Use --max-old-space-size to increase it.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["memory", "V8", "performance"]
+  },
+  {
+    "topic": "Logging",
+    "shortDescription": "Use a structured logging library (Winston, Pino, Bunyan) instead of console.log in production. Structured logs (JSON) are easier to query in log aggregation tools like Datadog or ELK.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["logging", "observability"]
+  },
+  {
+    "topic": "Compression",
+    "shortDescription": "Compress HTTP response bodies (gzip or Brotli) to reduce transfer size. In Express, use the compression middleware. Best done at the reverse proxy layer in production.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["performance", "HTTP"]
+  },
+  {
+    "topic": "Static files",
+    "shortDescription": "Serve static assets in Express with express.static('public'). In production, serve static files from a CDN or reverse proxy (nginx) instead of the Node process.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Express", "static files"]
+  },
+  {
+    "topic": "Docker integration",
+    "shortDescription": "Containerise a Node.js app with a Dockerfile: use node:alpine as base, copy package.json first (layer caching), run npm ci, copy source, and set CMD [\"node\", \"server.js\"]. Use .dockerignore to exclude node_modules.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["Docker", "DevOps"]
+  },
+  {
+    "topic": "Microservices",
+    "shortDescription": "Architecture where the application is split into small, independently deployable services that communicate via HTTP or message queues. Each service owns its data and can be scaled individually.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["microservices", "architecture"]
+  },
+  {
+    "topic": "GraphQL",
+    "shortDescription": "A query language and runtime for APIs where clients specify exactly what data they need. Reduces over-fetching and under-fetching. Apollo Server is the most popular Node.js implementation.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["GraphQL", "API"]
+  },
+  {
+    "topic": "REPL",
+    "shortDescription": "Read-Eval-Print Loop — the interactive Node.js shell. Run node with no arguments to enter it. Useful for quick experimentation and debugging.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["tooling"]
+  },
+  {
+    "topic": "Version management",
+    "shortDescription": "Use nvm (Node Version Manager) or fnm to install and switch between multiple Node.js versions. Useful for matching the production environment or testing across versions.",
+    "longDescription": "",
+    "mainCategory": "Node.js",
+    "tags": ["tooling", "nvm"]
+  }
+]

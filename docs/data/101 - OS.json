@@ -1,0 +1,30 @@
+[
+  {
+    "topic": "Cooperative vs. Preemptive Multitasking",
+    "shortDescription": "Cooperative: tasks voluntarily yield control to others — a misbehaving task can starve the system. Preemptive: the OS forcibly switches tasks after a time slice, ensuring fairness and responsiveness.",
+    "longDescription": "In cooperative multitasking (used in early Mac OS, Windows 3.x), the running process must explicitly yield; if it hangs, the whole system hangs. In preemptive multitasking (all modern OSes), a hardware timer interrupts the running process at regular intervals and the scheduler decides what runs next. This guarantees that no single process can monopolize the CPU.",
+    "mainCategory": "OS",
+    "tags": ["multitasking", "scheduling"]
+  },
+  {
+    "topic": "Symmetric Multi-Threading (SMT) / Hyper-Threading",
+    "shortDescription": "A technique that lets a single physical CPU core appear as two logical cores by keeping multiple thread contexts in hardware, filling pipeline stalls with work from a second thread.",
+    "longDescription": "SMT (Intel calls it Hyper-Threading) duplicates the architectural state (registers, program counter) for two threads on one physical core while sharing execution units. When one thread stalls on a cache miss or branch misprediction, the core switches to the other thread's work. This improves throughput for multithreaded workloads by 20–30% on average, though the two logical cores share physical resources so gains are workload-dependent.",
+    "mainCategory": "OS",
+    "tags": ["CPU", "concurrency", "hyper-threading"]
+  },
+  {
+    "topic": "Processes vs. Threads",
+    "shortDescription": "A process is an isolated execution container with its own memory space. Threads run inside a process and share its memory, making communication fast but introducing race condition risks.",
+    "longDescription": "Processes communicate via Inter-Process Communication (IPC) mechanisms — pipes, sockets, shared memory, signals — which are slower but safer because a crash in one process cannot corrupt another. Threads share heap and global state, so communication is cheap but requires synchronization primitives (mutexes, semaphores) to avoid data races. Creating a thread is faster and cheaper than spawning a new process.",
+    "mainCategory": "OS",
+    "tags": ["processes", "threads", "concurrency", "IPC"]
+  },
+  {
+    "topic": "Hyper-Threading",
+    "shortDescription": "Intel's brand name for SMT: one physical core presents two logical cores to the OS, improving throughput by filling CPU pipeline stalls with work from a second hardware thread.",
+    "longDescription": "The two logical cores share the physical execution units, L1/L2 caches, and TLB. The OS schedules threads onto logical cores unaware of the physical topology. Performance gains depend heavily on workload: memory-bound or I/O-heavy tasks benefit most; purely compute-bound tasks see minimal gain and can even slightly degrade due to cache contention.",
+    "mainCategory": "OS",
+    "tags": ["CPU", "concurrency", "Intel"]
+  }
+]
