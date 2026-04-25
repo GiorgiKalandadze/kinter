@@ -5,5 +5,40 @@
     "longDescription": "",
     "mainCategory": "Cloud & DevOps",
     "tags": ["GCP", "GitHub Actions", "security", "authentication"]
+  },
+  {
+    "topic": "How does Docker achieve container isolation and resource limitation at the OS level?",
+    "shortDescription": "Docker relies on two core Linux kernel features. It uses Namespaces to provide isolated workspaces (networking, process IDs, mount points) so containers cannot see each other's environments. It uses Control Groups (cgroups) to limit and monitor resource usage like CPU, memory, and disk I/O.",
+    "longDescription": "",
+    "mainCategory": "DevOps",
+    "tags": ["docker", "linux kernel", "architecture"]
+  },
+  {
+    "topic": "What are the best practices for optimizing Docker images to improve deployment velocity in a CI/CD pipeline?",
+    "shortDescription": "Optimization strategies include using multi-stage builds to compile code and only copy the necessary production binaries into the final image, leveraging minimal base images (like Alpine or distroless), and minimizing the number of image layers by ordering commands to maximize cache hits.",
+    "longDescription": "",
+    "mainCategory": "DevOps",
+    "tags": ["docker", "ci/cd", "optimization", "multi-stage builds"]
+  },
+  {
+    "topic": "Why is running containers as the root user considered a security risk, and how do you mitigate it?",
+    "shortDescription": "If a root-privileged container is compromised, an attacker could exploit kernel vulnerabilities to gain root access to the underlying host. Mitigation involves defining a non-root USER in the Dockerfile, enabling user namespace remapping on the Docker daemon, or running Docker in rootless mode.",
+    "longDescription": "",
+    "mainCategory": "DevOps",
+    "tags": ["docker", "security", "best practices"]
+  },
+  {
+    "topic": "What is the architectural difference between Docker's bridge, host, and overlay network drivers?",
+    "shortDescription": "Bridge is the default, creating a private software bridge network on a single host. Host removes network isolation entirely, binding the container directly to the host's networking stack for low-latency performance. Overlay creates a distributed network across multiple host machines, which is essential for clustered environments.",
+    "longDescription": "",
+    "mainCategory": "DevOps",
+    "tags": ["docker", "networking", "system design"]
+  },
+  {
+    "topic": "What is the distinction between Docker, containerd, and runc?",
+    "shortDescription": "Docker is the high-level platform for building and managing images. 'containerd' is the industry-standard daemon that actually manages the container lifecycle (image transfer, execution). 'runc' is the low-level CLI tool invoked by containerd to spawn and run the containers using OS-level features.",
+    "longDescription": "",
+    "mainCategory": "DevOps",
+    "tags": ["docker", "internals", "container runtime"]
   }
 ]
