@@ -4,7 +4,7 @@ const QuestionSchema = new Schema(
     {
         topic: { type: String, required: true },
         shortDescription: { type: String, required: true },
-        longDescription: { type: String, required: true },
+        longDescription: { type: String, default: '' },
         tags: { type: [String], default: [] },
         mainCategory: {type: String, required: true},
         references: { type: [String], default: [] }
