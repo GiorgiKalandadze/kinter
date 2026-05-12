@@ -276,6 +276,8 @@ async function loadAllData() {
 
 async function getCategories() {
   const data = await loadAllData();
+  console.log(data);
+  
   const counts = {};
   data.forEach(q => {
     if (q.mainCategory) counts[q.mainCategory] = (counts[q.mainCategory] || 0) + 1;
