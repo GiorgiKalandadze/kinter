@@ -9,20 +9,34 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #f7f5f0;
+    --bg: #ffffff;
     --surface: #ffffff;
-    --border: #e2ddd6;
-    --text: #1a1814;
-    --text-muted: #9a9590;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #9ca3af;
     --accent: #2d5a3d;
-    --accent-light: #eef4f0;
-    --tag-bg: #f0ede8;
-    --tag-text: #6b6560;
-    --reveal-bg: #fafdf9;
+    --accent-light: #f0fdf4;
+    --tag-bg: #f3f4f6;
+    --tag-text: #6b7280;
+    --reveal-bg: #f9fafb;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
   }
 
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Libre Baskerville', Georgia, serif; font-size: 16px; line-height: 1.6; }
+  [data-theme="dark"] {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #242424;
+    --text: #f3f4f6;
+    --text-muted: #6b7280;
+    --accent: #4ade80;
+    --accent-light: #052e16;
+    --tag-bg: #1c1c1c;
+    --tag-text: #9ca3af;
+    --reveal-bg: #0d0d0d;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Libre Baskerville', Georgia, serif; font-size: 16px; line-height: 1.6; transition: background 0.2s, color 0.2s; }
 
   #app { display: flex; flex-direction: column; min-height: 100vh; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
@@ -32,6 +46,7 @@
     padding: 20px 0 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 16px;
   }
   .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
   .logo { font-size: 13px; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
 
   .back-btn {
@@ -55,6 +70,17 @@
   .progress-text { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
   .progress-bar { width: 120px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* Icon buttons */
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn svg { width: 15px; height: 15px; }
+  .icon-btn.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
 
   /* Category screen */
   #category-screen {
@@ -82,7 +108,7 @@
   .cc-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
 
   .cat-status { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); padding: 12px 0; }
-  .cat-error  { font-family: 'DM Mono', monospace; font-size: 12px; color: #c0392b; padding: 8px 12px; background: #fdf0ee; border-radius: 6px; border: 1px solid #f0c0ba; }
+  .cat-error  { font-family: 'DM Mono', monospace; font-size: 12px; color: #dc2626; padding: 8px 12px; background: #fef2f2; border-radius: 6px; border: 1px solid #fecaca; }
 
   /* Card screen */
   #card-screen { display: none; flex-direction: column; flex: 1; }
@@ -109,7 +135,7 @@
   .card-question { padding: 48px 44px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
   .card-answer   { padding: 48px 44px; background: var(--reveal-bg); display: flex; flex-direction: column; gap: 20px; position: relative; transition: background 0.15s; }
   .card-answer.tap-to-reveal { cursor: pointer; }
-  .card-answer.tap-to-reveal:hover { background: #f5fbf7; }
+  .card-answer.tap-to-reveal:hover { background: var(--accent-light); }
 
   .panel-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
   .panel-body  { font-size: 1.05rem; line-height: 1.75; color: var(--text); flex: 1; }
@@ -125,7 +151,7 @@
     border-radius: 6px; color: var(--text-muted); cursor: pointer; transition: all 0.15s;
     white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   }
-  .reveal-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 2px 8px rgba(45,90,61,0.12); }
+  .reveal-btn:hover { border-color: var(--accent); color: var(--accent); }
 
   .answer-footer { display: flex; justify-content: flex-end; }
   .detail-btn {
@@ -164,6 +190,14 @@
   .kbd-hint  { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); }
   kbd { display: inline-block; padding: 2px 6px; background: var(--tag-bg); border: 1px solid var(--border); border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--tag-text); }
 
+  /* Focused mode */
+  body.focused #q-tags,
+  body.focused #filter-bar,
+  body.focused #controls,
+  body.focused .kbd-hints,
+  body.focused #progress-wrap { display: none !important; }
+  body.focused #stage { padding-top: 0; }
+
   @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -191,9 +225,26 @@
       </button>
       <span class="category-badge" id="category-badge"></span>
     </div>
-    <div class="progress-wrap" id="progress-wrap" style="display:none">
-      <span class="progress-text" id="prog-text">1 / 1</span>
-      <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="header-right">
+      <div class="progress-wrap" id="progress-wrap" style="display:none">
+        <span class="progress-text" id="prog-text">1 / 1</span>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+      </div>
+      <button class="icon-btn" id="focus-btn" style="display:none" title="Focus mode (F)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="8" cy="8" r="2.5"/>
+          <path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="theme-btn" title="Toggle dark mode">
+        <svg id="theme-icon-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M13.5 10.5A5.5 5.5 0 016 3a5.5 5.5 0 100 10 5.5 5.5 0 007.5-2.5z"/>
+        </svg>
+        <svg id="theme-icon-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="display:none">
+          <circle cx="8" cy="8" r="3"/>
+          <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.5 1.5M11.3 11.3l1.5 1.5M3.2 12.8l1.5-1.5M11.3 4.7l1.5-1.5"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -249,17 +300,48 @@
       <span class="kbd-hint"><kbd>Space</kbd> Reveal</span>
       <span class="kbd-hint"><kbd>D</kbd> Detail</span>
       <span class="kbd-hint"><kbd>S</kbd> Shuffle</span>
+      <span class="kbd-hint"><kbd>F</kbd> Focus</span>
     </div>
   </div>
 
 </div>
 <script>
 let allCards = [], filtered = [], index = 0, activeTopics = new Set(), showDetail = false;
-let cachedCategories = null;
+let cachedCategories = null, focused = false;
+
+// Theme — runs before first paint since script is at body end
+(function () {
+  const saved = localStorage.getItem('theme') || 'light';
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-icon-moon').style.display = 'none';
+    document.getElementById('theme-icon-sun').style.display = '';
+  }
+})();
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const dark = theme === 'dark';
+  document.getElementById('theme-icon-moon').style.display = dark ? 'none' : '';
+  document.getElementById('theme-icon-sun').style.display = dark ? '' : 'none';
+  localStorage.setItem('theme', theme);
+}
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(isDark ? 'light' : 'dark');
+});
+
+// Focus mode
+function toggleFocus() {
+  focused = !focused;
+  document.body.classList.toggle('focused', focused);
+  document.getElementById('focus-btn').classList.toggle('active', focused);
+}
+document.getElementById('focus-btn').addEventListener('click', toggleFocus);
 
 async function initCategories() {
   const grid = document.getElementById('category-grid');
-
   if (!cachedCategories) {
     try {
       const res = await fetch('/api/questions/categories');
@@ -270,25 +352,20 @@ async function initCategories() {
       return;
     }
   }
-
   renderCategoryGrid();
 }
 
 function renderCategoryGrid() {
   const grid = document.getElementById('category-grid');
   grid.innerHTML = '';
-
   if (!cachedCategories || cachedCategories.length === 0) {
     grid.innerHTML = '<span class="cat-status">No categories found.</span>';
     return;
   }
-
   cachedCategories.forEach(cat => {
     const el = document.createElement('div');
     el.className = 'category-card';
-    el.innerHTML = `
-      <div class="cc-name">${cat.name}</div>
-      <div class="cc-count">${cat.count} card${cat.count !== 1 ? 's' : ''}</div>`;
+    el.innerHTML = `<div class="cc-name">${cat.name}</div><div class="cc-count">${cat.count} card${cat.count !== 1 ? 's' : ''}</div>`;
     el.addEventListener('click', () => enterCategory(cat.name));
     grid.appendChild(el);
   });
@@ -314,12 +391,16 @@ async function enterCategory(name) {
   index = 0;
   activeTopics = new Set();
   showDetail = false;
+  focused = false;
+  document.body.classList.remove('focused');
+  document.getElementById('focus-btn').classList.remove('active');
 
   document.getElementById('back-btn').classList.add('visible');
   const badge = document.getElementById('category-badge');
   badge.textContent = name;
   badge.classList.add('visible');
   document.getElementById('progress-wrap').style.display = 'flex';
+  document.getElementById('focus-btn').style.display = 'flex';
 
   const allTags = [...new Set(allCards.flatMap(c => c.tags || []))].sort();
   const filterBar = document.getElementById('filter-bar');
@@ -343,6 +424,9 @@ function goBack() {
   document.getElementById('back-btn').classList.remove('visible');
   document.getElementById('category-badge').classList.remove('visible');
   document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('focus-btn').style.display = 'none';
+  focused = false;
+  document.body.classList.remove('focused');
   renderCategoryGrid();
 }
 
@@ -460,6 +544,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === ' ') { e.preventDefault(); reveal(); }
   else if (e.key === 'd' || e.key === 'D') toggleDetail();
   else if (e.key === 's' || e.key === 'S') shuffle();
+  else if (e.key === 'f' || e.key === 'F') toggleFocus();
 });
 
 initCategories();
