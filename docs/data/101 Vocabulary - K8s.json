@@ -1,0 +1,485 @@
+[
+  {
+    "topic": "Pod",
+    "shortDescription": "The smallest deployable unit in Kubernetes. A Pod wraps one or more containers that share the same network namespace (IP address, ports) and can share storage volumes. All containers in a Pod are always co-scheduled on the same node.",
+    "longDescription": "A Pod is ephemeral — if it dies, it is not rescheduled; a controller (Deployment, StatefulSet, etc.) must recreate it. Containers in a Pod communicate via localhost. A Pod has a single IP address assigned from the cluster's Pod CIDR, visible cluster-wide. The Pod spec includes: `containers[]`, `initContainers[]`, `volumes[]`, `nodeName`, `restartPolicy`, `serviceAccountName`, `securityContext`, `dnsPolicy`, `hostNetwork`. Restart policies: `Always` (default), `OnFailure`, `Never`. Pod phases: Pending → Running → Succeeded / Failed / Unknown. Pod conditions: `Initialized`, `Ready`, `ContainersReady`, `PodScheduled`. A Pod in the `Pending` phase is waiting for scheduling or image pull. Avoid running naked Pods — always use a controller so the Pod is replaced on failure.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Pod", "containers", "network namespace", "ephemeral"]
+  },
+  {
+    "topic": "Node",
+    "shortDescription": "A worker machine in the cluster — can be a physical server or VM. Each node runs the kubelet, kube-proxy, and a container runtime (containerd). The control plane schedules Pods onto nodes.",
+    "longDescription": "Node components: `kubelet` (receives Pod specs from API server, manages container lifecycle, reports node status), `kube-proxy` (manages iptables/IPVS rules for Service routing), container runtime (containerd or CRI-O, implements CRI). Node capacity fields: `cpu`, `memory`, `pods`, `ephemeral-storage`, and extended resources (e.g., GPUs). Allocatable = Capacity minus the resources reserved for OS and Kubernetes system components. Node conditions: `Ready` (kubelet healthy), `MemoryPressure`, `DiskPressure`, `PIDPressure`, `NetworkUnavailable`. Nodes can be cordoned (`kubectl cordon`) to stop new Pods from being scheduled, and drained (`kubectl drain`) to evict existing Pods before maintenance.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Node", "kubelet", "kube-proxy", "worker", "capacity"]
+  },
+  {
+    "topic": "Namespace",
+    "shortDescription": "A virtual cluster inside a physical cluster. Namespaces scope names of most resources (Pods, Services, Deployments) so different teams or environments can coexist without name collisions.",
+    "longDescription": "Resources are either namespaced (Pods, Services, ConfigMaps, Secrets, Deployments, PVCs, ServiceAccounts, Roles, RoleBindings) or cluster-scoped (Nodes, PersistentVolumes, ClusterRoles, ClusterRoleBindings, Namespaces themselves, StorageClasses). Default namespaces: `default`, `kube-system` (control plane components), `kube-public` (publicly readable), `kube-node-lease` (node heartbeat leases). ResourceQuotas and LimitRanges are applied per namespace. NetworkPolicies are also namespace-scoped. DNS within a namespace: `service-name` resolves the Service; cross-namespace: `service-name.namespace.svc.cluster.local`. Namespaces are NOT security boundaries on their own — use RBAC, NetworkPolicy, and PodSecurityAdmission together.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Namespace", "isolation", "scope", "ResourceQuota"]
+  },
+  {
+    "topic": "Deployment",
+    "shortDescription": "A controller that manages a ReplicaSet to ensure a desired number of identical Pod replicas are running. It handles rolling updates, rollbacks, and scaling declaratively.",
+    "longDescription": "A Deployment owns a ReplicaSet which owns Pods. On update, the Deployment creates a new ReplicaSet and gradually shifts replicas from old to new (rolling update). Key spec fields: `replicas`, `selector` (immutable label selector), `template` (Pod template), `strategy` (`RollingUpdate` or `Recreate`). RollingUpdate parameters: `maxSurge` (extra Pods allowed above desired count during update — number or %) and `maxUnavailable` (Pods allowed below desired count — number or %). Rollback: `kubectl rollout undo deployment/name` restores the previous ReplicaSet. Revision history is stored as old ReplicaSets (controlled by `revisionHistoryLimit`, default 10). `kubectl rollout status` watches the update. `kubectl rollout pause` / `resume` for canary-style progressive rollouts.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Deployment", "ReplicaSet", "rolling update", "rollback", "scaling"]
+  },
+  {
+    "topic": "ReplicaSet",
+    "shortDescription": "Ensures a specified number of Pod replicas are running at all times. Rarely used directly — Deployments manage ReplicaSets. Uses a label selector to identify the Pods it owns.",
+    "longDescription": "A ReplicaSet continuously reconciles: it counts Pods matching its selector, creates Pods if the count is below `replicas`, and deletes Pods if above. Ownership is established via `ownerReferences` on the Pod. If you manually create a Pod with labels matching an existing ReplicaSet's selector, the ReplicaSet may adopt and then immediately delete it to maintain the desired count. The selector is immutable after creation — this is why Deployments create new ReplicaSets on template change rather than mutating the existing one. In practice, you interact with Deployments; ReplicaSets are an implementation detail visible via `kubectl get replicaset`.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["ReplicaSet", "replicas", "label selector", "reconciliation"]
+  },
+  {
+    "topic": "StatefulSet",
+    "shortDescription": "A controller for Pods that need stable, persistent identity — stable network names, stable storage, and ordered deployment/scaling. Used for databases (Postgres, MongoDB, Kafka, ZooKeeper).",
+    "longDescription": "Each Pod in a StatefulSet gets a sticky ordinal index (pod-0, pod-1, ...) and a stable hostname: `<pod-name>.<headless-service>.<namespace>.svc.cluster.local`. PersistentVolumeClaims are created per Pod from `volumeClaimTemplates` — they persist across Pod restarts and are NOT deleted when the StatefulSet is deleted (by design). Deployment order: Pods are created sequentially (0, 1, 2...) by default and each must be `Running` and `Ready` before the next starts. Deletion is reverse order. Update strategy: `RollingUpdate` (default, reverse order) or `OnDelete` (manual). Headless Service (`clusterIP: None`) is required to provide stable DNS. For data replication, apps manage their own leader election — Kubernetes only provides the stable identity infrastructure.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["StatefulSet", "stable identity", "ordered", "PVC", "headless service"]
+  },
+  {
+    "topic": "DaemonSet",
+    "shortDescription": "Ensures exactly one copy of a Pod runs on every node (or a subset matching a node selector). Used for cluster-wide agents: log shippers (Fluentd), metrics collectors (node-exporter), network plugins (CNI agents).",
+    "longDescription": "As new nodes join the cluster, the DaemonSet automatically schedules the Pod on them. When a node is removed, the DaemonSet Pod is garbage collected — no rescheduling. Node selector and affinity can restrict DaemonSet Pods to a subset of nodes. By default, DaemonSet Pods tolerate `node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` taints so they can run even on degraded nodes. Update strategy: `RollingUpdate` (default) or `OnDelete`. DaemonSet Pods bypass the scheduler's bin-packing logic — they are placed directly by the DaemonSet controller. `kubectl get daemonset -n kube-system` shows the kube-proxy and CNI DaemonSets.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["DaemonSet", "every node", "log shipper", "node-exporter", "CNI"]
+  },
+  {
+    "topic": "Job",
+    "shortDescription": "Runs one or more Pods to completion for batch tasks. Guarantees that a specified number of Pods successfully terminate. Pods are NOT restarted after success — only on failure (depending on `restartPolicy`).",
+    "longDescription": "Job spec: `completions` (total successful Pods needed, default 1), `parallelism` (max Pods running at once), `backoffLimit` (retry attempts before the Job is marked Failed, default 6), `activeDeadlineSeconds` (wall-clock timeout). Completion modes: `NonIndexed` (any Pod's success counts) or `Indexed` (each completion index 0..N-1 runs once). Pod `restartPolicy` must be `Never` or `OnFailure` for Jobs. Failed Pods are left for log inspection until the Job is deleted. `ttlSecondsAfterFinished` auto-deletes the Job after completion. Jobs are often used for DB migrations, data processing, and one-off admin tasks. For recurring Jobs, use CronJob.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Job", "batch", "completions", "parallelism", "backoffLimit"]
+  },
+  {
+    "topic": "CronJob",
+    "shortDescription": "Creates Jobs on a cron schedule. Spec includes a standard cron expression and a Job template. Each scheduled run creates a new Job object which in turn creates Pods.",
+    "longDescription": "Cron format: `\"*/5 * * * *\"` (every 5 minutes), `\"0 2 * * *\"` (daily at 2 AM UTC). Key fields: `schedule`, `jobTemplate`, `concurrencyPolicy` (`Allow` — multiple Jobs can run simultaneously, `Forbid` — skip new run if previous still running, `Replace` — cancel previous and start new), `startingDeadlineSeconds` (how late a missed schedule can start), `successfulJobsHistoryLimit` (default 3), `failedJobsHistoryLimit` (default 1). If the control plane is down during a scheduled window and `startingDeadlineSeconds` has elapsed, the run is counted as missed. More than 100 missed runs cause the CronJob to stop scheduling — a known footgun to watch for.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["CronJob", "cron", "scheduled", "Job", "concurrencyPolicy"]
+  },
+  {
+    "topic": "Service",
+    "shortDescription": "A stable virtual IP (ClusterIP) and DNS name that load-balances traffic to a dynamic set of Pods selected by labels. Decouples consumers from the ephemeral IPs of individual Pods.",
+    "longDescription": "Service types: `ClusterIP` (default, internal only), `NodePort` (exposes a static port on every node, 30000–32767, forwards to ClusterIP), `LoadBalancer` (provisions a cloud load balancer, routes to NodePort, then ClusterIP), `ExternalName` (DNS CNAME alias to an external hostname, no proxying). `clusterIP: None` creates a Headless Service — no VIP, DNS returns individual Pod IPs directly (used by StatefulSets and service discovery). Selectors match Pod labels; the Service controller maintains `Endpoints` / `EndpointSlices` of ready Pod IPs. Session affinity: `ClientIP` pins a client to the same Pod. `externalTrafficPolicy: Local` preserves the client's source IP but risks uneven distribution.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Service", "ClusterIP", "NodePort", "LoadBalancer", "Headless", "DNS"]
+  },
+  {
+    "topic": "Ingress",
+    "shortDescription": "An API object that defines HTTP/HTTPS routing rules — mapping hostnames and URL paths to backend Services. Requires an Ingress Controller to be installed to do the actual proxying.",
+    "longDescription": "An Ingress resource is just a configuration object — it does nothing without an Ingress Controller (NGINX, Traefik, HAProxy, AWS ALB, GCE). The controller watches Ingress objects and programs its reverse proxy accordingly. Rules: each `spec.rules[].host` + `paths[].path` maps to a `backend.service.name` and `port`. `spec.tls` configures HTTPS using a Secret containing the TLS certificate and key — cert-manager automates certificate provisioning via Let's Encrypt. Path types: `Exact`, `Prefix`, `ImplementationSpecific`. Annotations control controller-specific behavior (e.g., `nginx.ingress.kubernetes.io/rewrite-target`). IngressClass selects which controller handles an Ingress when multiple controllers are installed.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Ingress", "IngressController", "NGINX", "routing", "TLS", "cert-manager"]
+  },
+  {
+    "topic": "ConfigMap",
+    "shortDescription": "Stores non-sensitive configuration data as key-value pairs. Injected into Pods as environment variables, command-line arguments, or mounted as files in a volume.",
+    "longDescription": "ConfigMaps decouple configuration from container images, enabling the same image to run in dev/staging/prod with different configs. Max size: 1 MiB (etcd limit). Consumption methods: (1) `envFrom.configMapRef` — all keys become env vars; (2) `env[].valueFrom.configMapKeyRef` — single key; (3) `volumes[].configMap` — each key becomes a file in the mounted directory. Immutable ConfigMaps (`immutable: true`) cannot be updated — they must be replaced and Pods restarted. When mounted as a volume, Kubernetes updates the file content automatically on ConfigMap change (with a delay of up to the kubelet sync period, ~1 min), but env vars require a Pod restart. Do NOT store sensitive data in ConfigMaps — use Secrets.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["ConfigMap", "configuration", "env vars", "volume mount"]
+  },
+  {
+    "topic": "Secret",
+    "shortDescription": "Like a ConfigMap but for sensitive data (passwords, tokens, TLS certs). Values are base64-encoded at rest in etcd (NOT encrypted by default — enable EncryptionConfiguration for real encryption).",
+    "longDescription": "Secret types: `Opaque` (arbitrary key-value), `kubernetes.io/tls` (tls.crt + tls.key), `kubernetes.io/dockerconfigjson` (image pull credentials), `kubernetes.io/service-account-token`. Consumed the same as ConfigMaps: env vars or volume mounts. Mounted Secrets appear as files with permissions 0644 by default. When used as a volume, the files update automatically when the Secret changes. RBAC should restrict `get`/`list` on Secrets to only what needs them. Avoid putting Secrets in env vars in production (they appear in `kubectl describe pod` output and process listings). Base64 is encoding, not encryption — anyone who can read the Secret object can decode it. Use external secret managers (Vault, AWS Secrets Manager) with operators like External Secrets Operator for production.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Secret", "sensitive data", "base64", "TLS", "RBAC", "encryption"]
+  },
+  {
+    "topic": "PersistentVolume (PV)",
+    "shortDescription": "A cluster-level storage resource provisioned by an admin or dynamically by a StorageClass. It has a lifecycle independent of any Pod and retains data across Pod restarts and rescheduling.",
+    "longDescription": "PV spec fields: `capacity.storage`, `accessModes` (`ReadWriteOnce` — single node read/write, `ReadOnlyMany` — many nodes read-only, `ReadWriteMany` — many nodes read/write, `ReadWriteOncePod` — single Pod only), `persistentVolumeReclaimPolicy` (`Retain` — keep data, `Delete` — delete underlying storage, `Recycle` — deprecated). `volumeMode`: `Filesystem` (default) or `Block` (raw block device). PV phases: Available → Bound → Released → Failed. A PV is bound to exactly one PVC. Static provisioning: admin creates PVs manually. Dynamic provisioning: StorageClass creates PVs automatically when a PVC is created. Node affinity on PVs restricts which nodes can mount them (important for local storage).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["PersistentVolume", "PV", "storage", "accessModes", "reclaim policy"]
+  },
+  {
+    "topic": "PersistentVolumeClaim (PVC)",
+    "shortDescription": "A request for storage by a user. Binds to a PV that satisfies its requirements (size, access mode, StorageClass). Pods reference PVCs in their volume spec, not PVs directly.",
+    "longDescription": "A PVC specifies `resources.requests.storage`, `accessModes`, and optionally `storageClassName`. The control plane binds it to the best matching available PV, or triggers dynamic provisioning via the StorageClass. Once bound, the PVC's capacity is the PV's capacity (even if larger than requested). Volume expansion: if the StorageClass supports `allowVolumeExpansion: true`, you can increase `spec.resources.requests.storage` on the PVC — the controller expands the underlying volume. Decreasing is not supported. PVC protection finalizer prevents deletion of a PVC while it is mounted by a Pod. StatefulSet `volumeClaimTemplates` creates one PVC per Pod replica automatically.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["PVC", "PersistentVolumeClaim", "storage request", "binding", "expansion"]
+  },
+  {
+    "topic": "StorageClass",
+    "shortDescription": "Defines a class of storage with a specific provisioner, parameters, and reclaim policy. Enables dynamic provisioning — PVs are created on-demand when a PVC references the StorageClass.",
+    "longDescription": "Key fields: `provisioner` (e.g., `ebs.csi.aws.com`, `pd.csi.storage.gke.io`, `disk.csi.azure.com`), `parameters` (provisioner-specific, e.g., disk type, IOPS), `reclaimPolicy` (`Delete` or `Retain`), `volumeBindingMode` (`Immediate` or `WaitForFirstConsumer` — delays binding until a Pod is scheduled, important for zonal storage to match the Pod's zone), `allowVolumeExpansion`. A cluster can have one default StorageClass — PVCs without an explicit class use it. CSI (Container Storage Interface) is the standard plugin mechanism; `in-tree` drivers (older) are being deprecated in favor of CSI drivers.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["StorageClass", "dynamic provisioning", "CSI", "provisioner", "WaitForFirstConsumer"]
+  },
+  {
+    "topic": "Volume",
+    "shortDescription": "A directory accessible to containers in a Pod. Unlike a container's filesystem, a volume's lifetime is tied to the Pod (not the container), so data survives container restarts within the same Pod.",
+    "longDescription": "Volume types: `emptyDir` — temporary directory, created when Pod starts, deleted when Pod dies (backed by node disk or `medium: Memory` for RAM tmpfs); `hostPath` — mounts a node file or directory (risky, breaks portability, avoid in production); `configMap` / `secret` — injects ConfigMap/Secret data as files; `persistentVolumeClaim` — mounts a PVC; `projected` — combines multiple sources (configMap, secret, downwardAPI, serviceAccountToken) into one mount point; `downwardAPI` — exposes Pod metadata (name, namespace, labels, resource limits) as files; `nfs` — NFS share; CSI volumes (the modern way for any external storage). Volumes are declared in `spec.volumes[]` and mounted in containers via `spec.containers[].volumeMounts[]`.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Volume", "emptyDir", "hostPath", "configMap", "projected", "CSI"]
+  },
+  {
+    "topic": "API Server (kube-apiserver)",
+    "shortDescription": "The front-end of the Kubernetes control plane. All cluster operations go through it — kubectl, controllers, kubelets, and external tools all talk to the API server via HTTPS REST or gRPC.",
+    "longDescription": "The API server is stateless — all cluster state is stored in etcd, and the API server is the only component that talks to etcd. It handles: authentication (who are you?), authorization (what can you do? — RBAC, ABAC, Node, Webhook), admission control (mutating then validating webhooks + built-in admission plugins), and request validation. It persists objects to etcd and serves watch streams so controllers and kubelets get notified of changes without polling. Horizontal scaling: multiple API server replicas can run behind a load balancer (each is stateless). The API is versioned and extensible via CRDs and Aggregation Layer. API groups: core (`/api/v1`), named groups (`/apis/apps/v1`, `/apis/networking.k8s.io/v1`).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["API server", "kube-apiserver", "control plane", "authentication", "admission"]
+  },
+  {
+    "topic": "etcd",
+    "shortDescription": "A distributed, strongly consistent key-value store that holds all Kubernetes cluster state — every object, every resource, every configuration. Losing etcd means losing the cluster.",
+    "longDescription": "etcd uses the Raft consensus algorithm — a write is only committed once a quorum (majority) of members acknowledge it, ensuring consistency even if a minority of members fail. Cluster sizes: 3 (tolerates 1 failure) or 5 (tolerates 2 failures) members are standard. All Kubernetes objects are serialized to protobuf and stored under prefixes like `/registry/pods/default/my-pod`. etcd is the only place the API server persists state — controllers derive their state from watching the API server (which reads from etcd). Key operational concerns: regular snapshots (`etcdctl snapshot save`), encryption at rest for Secrets, monitoring disk IOPS (etcd is extremely latency-sensitive to disk), and keeping the cluster on a dedicated fast SSD. etcd compaction must be scheduled to reclaim disk space from old revisions.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["etcd", "Raft", "consensus", "cluster state", "backup"]
+  },
+  {
+    "topic": "Controller Manager (kube-controller-manager)",
+    "shortDescription": "Runs all built-in controllers in a single process. Each controller watches the API server for its resource type and reconciles actual state toward desired state — this is the control loop.",
+    "longDescription": "Built-in controllers include: Deployment controller, ReplicaSet controller, StatefulSet controller, DaemonSet controller, Job controller, CronJob controller, Node controller (marks nodes Not Ready, evicts Pods), Endpoints controller, Namespace controller, ServiceAccount controller, PV/PVC binding controller, and many more (~30 total). Each controller runs an independent goroutine with its own informer (shared-cache watch on the API server). The reconcile loop pattern: observe current state, compare to desired state, take the minimum action needed to close the gap. Leader election among multiple replicas ensures only one active controller manager runs at a time, preventing split-brain.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["controller manager", "control loop", "reconciliation", "leader election"]
+  },
+  {
+    "topic": "Scheduler (kube-scheduler)",
+    "shortDescription": "Watches for unscheduled Pods and assigns them to nodes by evaluating filtering (feasibility) and scoring (preference) plugins. Does not start Pods — it just writes `spec.nodeName`.",
+    "longDescription": "Scheduling pipeline: (1) Filtering — eliminates nodes that cannot run the Pod (insufficient CPU/memory, missing node selector labels, taints without matching tolerations, volume topology mismatch, port conflicts, Pod affinity violations); (2) Scoring — ranks remaining nodes (spread, resource balance, image locality, inter-Pod affinity weights); (3) Node selection — picks the highest scorer (ties broken randomly). The scheduler respects: `nodeSelector`, `nodeAffinity`, `podAffinity`, `podAntiAffinity`, `taints/tolerations`, resource `requests`, `topologySpreadConstraints`, and `schedulerName` (for custom schedulers). Multiple schedulers can run in a cluster. Preemption: the scheduler can evict lower-priority Pods to make room for a high-priority Pod that cannot otherwise be placed.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["scheduler", "filtering", "scoring", "affinity", "preemption"]
+  },
+  {
+    "topic": "kubelet",
+    "shortDescription": "The primary node agent. Receives PodSpecs from the API server, ensures containers are running and healthy, runs probes, reports Pod and node status back to the control plane, and manages the container lifecycle.",
+    "longDescription": "The kubelet watches the API server for Pods assigned to its node. For each Pod: it pulls images, calls the CRI (container runtime) to start containers, sets up volumes, mounts Secrets/ConfigMaps, runs liveness/readiness/startup probes, and reports container status. The kubelet does NOT manage containers it did not create (unless using static Pods). Static Pods are Pod manifest files placed in a directory (default `/etc/kubernetes/manifests`) that the kubelet reads directly — this is how control plane components (API server, controller manager, scheduler, etcd) run on master nodes in kubeadm clusters. The kubelet communicates with the container runtime via CRI (gRPC), with the network plugin via CNI, and with storage plugins via CSI.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["kubelet", "node agent", "CRI", "static pods", "probes"]
+  },
+  {
+    "topic": "kube-proxy",
+    "shortDescription": "A network proxy on every node that maintains iptables (or IPVS) rules to implement Kubernetes Service routing. Translates ClusterIP virtual addresses to real Pod IP addresses.",
+    "longDescription": "kube-proxy watches the API server for Service and EndpointSlice changes and updates the node's kernel networking rules accordingly. Modes: `iptables` (default — uses NAT rules, O(n) lookup time), `IPVS` (uses Linux IP Virtual Server, O(1) lookup, better for large clusters with many Services), `userspace` (deprecated, very slow). When a Pod connects to a ClusterIP, the kernel intercepts the packet via a DNAT rule and rewrites the destination to a randomly chosen endpoint Pod IP. kube-proxy does NOT proxy the actual data — it only programs the kernel. Some CNI solutions (Cilium) replace kube-proxy entirely using eBPF for better performance.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["kube-proxy", "iptables", "IPVS", "Service routing", "eBPF"]
+  },
+  {
+    "topic": "RBAC (Role-Based Access Control)",
+    "shortDescription": "The authorization mechanism in Kubernetes. Grants permissions (verbs on resources) to subjects (users, groups, ServiceAccounts) using Role/ClusterRole + RoleBinding/ClusterRoleBinding objects.",
+    "longDescription": "Four resource types: `Role` (grants permissions within a namespace), `ClusterRole` (grants permissions cluster-wide or to cluster-scoped resources), `RoleBinding` (binds a Role or ClusterRole to subjects within a namespace), `ClusterRoleBinding` (binds a ClusterRole to subjects cluster-wide). Verbs: `get`, `list`, `watch`, `create`, `update`, `patch`, `delete`, `deletecollection`. Subjects: `User` (external identity, authenticated by certificate CN or OIDC), `Group`, `ServiceAccount` (in-cluster identity). Principle of least privilege: grant only what's needed. Aggregated ClusterRoles combine multiple ClusterRoles via label selectors. `kubectl auth can-i <verb> <resource> --as=<user>` tests permissions. `kubectl auth reconcile` applies RBAC manifests safely.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["RBAC", "Role", "ClusterRole", "RoleBinding", "authorization", "least privilege"]
+  },
+  {
+    "topic": "ServiceAccount",
+    "shortDescription": "An identity for processes running inside Pods. Pods use their ServiceAccount's token to authenticate to the API server. Every namespace has a `default` ServiceAccount that Pods use unless specified otherwise.",
+    "longDescription": "A ServiceAccount's token is mounted automatically as a projected volume at `/var/run/secrets/kubernetes.io/serviceaccount/token` (since K8s 1.22, time-limited and audience-bound via the TokenRequest API, not a long-lived static token). The token, CA cert, and namespace are available to the Pod. To prevent API server access, set `automountServiceAccountToken: false` in the Pod or ServiceAccount spec. Bind RBAC Roles to ServiceAccounts to grant specific API permissions to application Pods. Service accounts are namespaced. Image pull secrets can be attached to a ServiceAccount to apply automatically to all Pods using it. External workloads can use Workload Identity (GKE, EKS) to bind a ServiceAccount to a cloud IAM role without static credentials.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["ServiceAccount", "Pod identity", "token", "RBAC", "automount"]
+  },
+  {
+    "topic": "Taint and Toleration",
+    "shortDescription": "Taints repel Pods from nodes; Tolerations allow Pods to be scheduled onto tainted nodes. Used to reserve nodes for specific workloads or prevent Pods from running on unhealthy or specialized nodes.",
+    "longDescription": "A taint has three parts: `key`, `value`, and `effect`. Effects: `NoSchedule` (new Pods without matching toleration are not scheduled; existing Pods stay), `PreferNoSchedule` (soft version of NoSchedule), `NoExecute` (new Pods rejected AND existing Pods evicted unless they have a matching toleration with optional `tolerationSeconds`). A toleration matches a taint by key/value (or wildcards) and must match the effect. System taints applied automatically: `node.kubernetes.io/not-ready:NoExecute`, `node.kubernetes.io/unreachable:NoExecute` (with 300s grace by default), `node.kubernetes.io/memory-pressure`, `node.kubernetes.io/disk-pressure`. Use case: `kubectl taint nodes gpu-node gpu=true:NoSchedule` reserves GPU nodes; only Pods with matching toleration land there.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["taint", "toleration", "NoSchedule", "NoExecute", "node reservation"]
+  },
+  {
+    "topic": "Node Affinity",
+    "shortDescription": "Constrains which nodes a Pod can be scheduled on based on node labels. More expressive than `nodeSelector` — supports `requiredDuringSchedulingIgnoredDuringExecution` (hard) and `preferredDuringSchedulingIgnoredDuringExecution` (soft).",
+    "longDescription": "Required affinity acts like a filter — if no node matches, the Pod stays Pending. Preferred affinity adds a weight (1–100) to matching nodes during scoring. Operators: `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, `Lt`. Common use: pin Pods to a specific availability zone (`topology.kubernetes.io/zone In [us-east-1a]`), require SSD nodes (`node.kubernetes.io/instance-type In [m5d.large]`). `nodeSelectorTerms` items are ORed; `matchExpressions` within one term are ANDed. `IgnoredDuringExecution` means already-running Pods are not evicted if a node's labels change to no longer match — a `RequiredDuringSchedulingRequiredDuringExecution` type is planned but not yet released.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["nodeAffinity", "node selector", "scheduling", "hard/soft", "topology"]
+  },
+  {
+    "topic": "Pod Affinity and Anti-Affinity",
+    "shortDescription": "Schedules Pods relative to other Pods. Affinity co-locates Pods (same node/zone); anti-affinity spreads them apart. Evaluated by label selectors against other Pods in a topology domain.",
+    "longDescription": "Same two types as node affinity: `requiredDuringSchedulingIgnoredDuringExecution` and `preferredDuringSchedulingIgnoredDuringExecution`. The `topologyKey` defines the domain — `kubernetes.io/hostname` (node level), `topology.kubernetes.io/zone` (zone level), `topology.kubernetes.io/region` (region level). Anti-affinity example: spread web server replicas across zones so an AZ outage doesn't take them all down. Warning: required pod anti-affinity with a `hostname` topology key limits the number of replicas to the number of nodes — adding more replicas than nodes will leave Pods Pending. Pod affinity/anti-affinity is O(N²) and expensive at scale — prefer `topologySpreadConstraints` for large clusters.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["podAffinity", "podAntiAffinity", "topology", "co-location", "spread"]
+  },
+  {
+    "topic": "topologySpreadConstraints",
+    "shortDescription": "Distributes Pods evenly across topology domains (zones, nodes) with fine-grained control over the maximum skew allowed between domains. The modern, scalable alternative to pod anti-affinity for spreading.",
+    "longDescription": "Key fields per constraint: `maxSkew` (maximum allowed difference in Pod count between the most and least loaded domain), `topologyKey` (label key defining the domain, e.g., `topology.kubernetes.io/zone`), `whenUnsatisfiable` (`DoNotSchedule` — hard constraint, or `ScheduleAnyway` — soft), `labelSelector` (which Pods to count). Multiple constraints are ANDed. Example: `maxSkew: 1, topologyKey: zone, whenUnsatisfiable: DoNotSchedule` ensures replicas are distributed as evenly as possible across zones with at most 1 extra per zone. `minDomains` specifies the minimum number of eligible domains — useful to prevent all Pods landing in one zone during a zone outage.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["topologySpreadConstraints", "spread", "maxSkew", "zones", "scheduling"]
+  },
+  {
+    "topic": "Resource Requests and Limits",
+    "shortDescription": "Requests are the guaranteed minimum CPU/memory for scheduling and resource reservation; limits are the enforced maximum. CPU limit enforcement is throttling; memory limit enforcement is OOMKill.",
+    "longDescription": "CPU is measured in cores or millicores (500m = 0.5 core). Memory in bytes (Mi, Gi). The scheduler uses `requests` to find a node with enough allocatable capacity — limits are not considered for scheduling. At runtime: CPU limit enforces a CFS quota (throttles if exceeded); memory limit enforces a cgroup limit (kernel OOMKills the container if exceeded). If memory `requests == limits`, the QoS class is Guaranteed. Setting only requests with no limits means the container can consume all available memory on the node — dangerous in a shared cluster. VPA can recommend and optionally auto-set requests based on historical usage. Setting correct requests is critical for cluster density and autoscaler accuracy.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["requests", "limits", "CPU", "memory", "OOMKill", "throttling", "QoS"]
+  },
+  {
+    "topic": "QoS Classes",
+    "shortDescription": "Kubernetes assigns each Pod a Quality of Service class (Guaranteed, Burstable, BestEffort) based on resource requests and limits. The class determines eviction priority under node memory pressure.",
+    "longDescription": "Guaranteed: every container has memory and CPU `requests == limits` (both set). These Pods are evicted last and get dedicated CPU time via static CPU manager (if enabled). Burstable: at least one container has requests or limits set (but not equal). Most Pods fall here. BestEffort: no requests or limits set on any container — the Pod gets whatever is left over and is evicted first. Eviction order under pressure: BestEffort first, then Burstable (those exceeding their requests), then Guaranteed. Eviction threshold: kubelet evicts Pods when node memory crosses `evictionHard` threshold (default: `memory.available < 100Mi`). PodDisruptionBudgets do not protect against kubelet-initiated evictions — they only govern voluntary disruptions.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["QoS", "Guaranteed", "Burstable", "BestEffort", "eviction", "memory pressure"]
+  },
+  {
+    "topic": "LimitRange",
+    "shortDescription": "A namespace-level policy that enforces minimum/maximum resource constraints and sets default requests/limits for containers that don't specify them. Prevents any single container from consuming unbounded resources.",
+    "longDescription": "LimitRange applies to: `Container` (per-container defaults and min/max), `Pod` (total across all containers), `PersistentVolumeClaim` (min/max storage request). Fields per type: `default` (default limit), `defaultRequest` (default request), `min`, `max`, `maxLimitRequestRatio` (limit/request ratio cap — prevents setting requests too low relative to limits, avoiding QoS gaming). LimitRange is enforced by an admission controller at creation/update time — existing Pods are not affected. Commonly used alongside ResourceQuota: ResourceQuota caps total namespace consumption; LimitRange governs individual resource sizes.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["LimitRange", "default limits", "min/max", "namespace policy", "admission"]
+  },
+  {
+    "topic": "ResourceQuota",
+    "shortDescription": "Caps the total amount of resources a namespace can consume — CPU, memory, number of Pods, Services, PVCs, Secrets, ConfigMaps, etc. Enforced at object creation time via admission control.",
+    "longDescription": "Spec: `hard` map of resource name to quantity. Resource names: `requests.cpu`, `limits.cpu`, `requests.memory`, `limits.memory`, `count/pods`, `count/services`, `count/persistentvolumeclaims`, `count/secrets`, `count/configmaps`, `requests.storage`. If a namespace has a ResourceQuota, every Pod must have requests and limits defined (enforced by the quota admission plugin — no request = quota cannot track it). Scopes narrow which objects the quota applies to: `Terminating`, `NotTerminating`, `BestEffort`, `NotBestEffort`, `PriorityClass`. `kubectl describe resourcequota -n myns` shows Used vs. Hard for all tracked resources.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["ResourceQuota", "namespace limits", "quota", "admission", "capacity"]
+  },
+  {
+    "topic": "HorizontalPodAutoscaler (HPA)",
+    "shortDescription": "Automatically scales the number of Pod replicas in a Deployment, ReplicaSet, or StatefulSet based on observed metrics (CPU, memory, or custom metrics). Reacts to actual load rather than requiring manual scaling.",
+    "longDescription": "HPA v2 targets: `resource` metrics (CPU/memory utilization — percentage of requests), `pods` metrics (custom per-Pod metrics from metrics-server or Prometheus Adapter), `object` metrics (e.g., queue depth from an Ingress or Kafka topic), `external` metrics (outside the cluster). Control loop runs every 15s by default. Algorithm: `desiredReplicas = ceil(currentReplicas * (currentMetricValue / desiredMetricValue))`. Scale-up is fast (as soon as metric exceeds threshold); scale-down is conservative — the `stabilizationWindowSeconds` (default 300s) prevents flapping. `minReplicas` / `maxReplicas` bound the range. Requires metrics-server for CPU/memory. KEDA extends HPA with 50+ event-driven scalers (Kafka, SQS, Redis, Prometheus, cron).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["HPA", "autoscaling", "CPU", "custom metrics", "KEDA", "stabilization"]
+  },
+  {
+    "topic": "VerticalPodAutoscaler (VPA)",
+    "shortDescription": "Automatically adjusts the CPU and memory requests (and optionally limits) of containers based on historical usage. Addresses the problem of under/over-provisioned resource requests.",
+    "longDescription": "VPA components: Recommender (analyzes metrics history, produces recommendations), Updater (evicts Pods whose current requests deviate significantly from recommendations), Admission Controller (mutates new Pod specs to apply recommended requests). Update modes: `Off` (recommendations only, no changes), `Initial` (only applies on Pod creation), `Recreate` (applies by evicting Pods), `Auto` (currently same as Recreate; future may support in-place updates). VPA and HPA on CPU/memory simultaneously is not recommended (they fight each other) — use HPA on custom metrics with VPA on CPU/memory, or use one only. In-place Pod resize (`InPlacePodVerticalScaling` feature gate) allows changing requests without Pod restart in newer versions.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["VPA", "vertical scaling", "resource requests", "Recommender", "in-place resize"]
+  },
+  {
+    "topic": "Cluster Autoscaler",
+    "shortDescription": "Automatically adds or removes nodes from a cluster based on Pod scheduling demand. Adds nodes when Pods are Pending due to insufficient capacity; removes underutilized nodes to save cost.",
+    "longDescription": "Scale-up trigger: a Pod is Pending and the scheduler cannot place it on any existing node. The Cluster Autoscaler simulates placing the Pod on a new node from each configured node group and picks the best group. Scale-down trigger: a node is underutilized (default < 50% of requests) AND all Pods on it can be rescheduled elsewhere. Scale-down is conservative: it respects PodDisruptionBudgets, local storage, system Pods, and `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"` annotation. Node group configuration is cloud-provider specific (AWS Auto Scaling Groups, GCP Managed Instance Groups, Azure VMSS). Overprovisioning pattern: run placeholder low-priority Pods to keep spare capacity so scale-up is pre-emptive rather than reactive.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Cluster Autoscaler", "node scaling", "Pending pods", "underutilization", "PDB"]
+  },
+  {
+    "topic": "PodDisruptionBudget (PDB)",
+    "shortDescription": "Limits the number of Pods of a given application that can be voluntarily disrupted at once — during node drains, rolling updates, or cluster autoscaler scale-down. Guarantees availability during maintenance.",
+    "longDescription": "Spec: `selector` (identifies which Pods), and either `minAvailable` (minimum Pods that must be available — number or %) or `maxUnavailable` (maximum Pods that can be unavailable — number or %). A PDB applies to voluntary disruptions: node drain, cluster autoscaler, Deployment rolling update, and anything using the Eviction API. It does NOT protect against involuntary disruptions (node crash, OOMKill, kernel panic). The Eviction API checks PDBs before evicting a Pod — if eviction would violate the PDB, it returns HTTP 429. Set `minAvailable: 1` or `maxUnavailable: 1` for stateless apps; be careful with 100% minAvailable on single-replica Deployments — it will block all drains entirely.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["PDB", "PodDisruptionBudget", "availability", "eviction", "drain", "voluntary disruption"]
+  },
+  {
+    "topic": "Liveness Probe",
+    "shortDescription": "Periodically checks if a container is alive. If it fails, the kubelet restarts the container according to the Pod's `restartPolicy`. Detects deadlocked or frozen processes that are running but not functional.",
+    "longDescription": "Probe types: `httpGet` (HTTP GET — success if 200–399), `tcpSocket` (TCP connection success), `exec` (command exit code 0), `grpc` (gRPC health check protocol). Configuration fields: `initialDelaySeconds` (wait before first probe — must cover startup time), `periodSeconds` (how often, default 10), `timeoutSeconds` (probe timeout, default 1), `failureThreshold` (consecutive failures before action, default 3), `successThreshold` (consecutive successes to consider healthy, default 1). A failing liveness probe causes a container restart — check your `restartPolicy` (default `Always` for Deployments). Avoid using liveness probes for transient errors (e.g., external dependency down) — this causes cascading restarts. Use readiness probes for dependency issues.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["livenessProbe", "health check", "restart", "httpGet", "exec"]
+  },
+  {
+    "topic": "Readiness Probe",
+    "shortDescription": "Periodically checks if a container is ready to receive traffic. A failing readiness probe removes the Pod from Service endpoints — it stops receiving traffic but is NOT restarted.",
+    "longDescription": "Same probe types and config fields as liveness probes. The readiness probe is the right tool for: temporary unavailability (cache warming, dependency down, rate limited), graceful startup (remove from load balancer when shutting down), and maintenance mode. Unlike liveness probes, readiness failure never restarts the container. A Pod is considered Ready only when all containers pass their readiness probes — the Pod's `Ready` condition becomes `True` and it is added to Service Endpoints. Rolling updates wait for new Pods to become Ready before proceeding. During graceful shutdown, the readiness probe should immediately start failing (or use `preStop` hook) so traffic drains before the container stops.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["readinessProbe", "traffic routing", "endpoints", "graceful shutdown", "rolling update"]
+  },
+  {
+    "topic": "Startup Probe",
+    "shortDescription": "Disables liveness and readiness probes until the container passes an initial check. Solves the problem of slow-starting applications that would be killed by liveness probes before they finish booting.",
+    "longDescription": "The startup probe runs exclusively until it succeeds — during this time, liveness and readiness probes are paused. Once the startup probe succeeds, it is no longer run. If the startup probe fails `failureThreshold` times (default 3), the container is killed and subject to `restartPolicy`. To allow up to 5 minutes of startup time: `failureThreshold: 30, periodSeconds: 10`. Compare to setting a high `initialDelaySeconds` on liveness — the startup probe is better because it adapts to actual startup completion rather than a fixed worst-case estimate. Useful for JVM apps, apps with large data loads, or containers that warm up caches on boot.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["startupProbe", "slow startup", "liveness", "failureThreshold", "JVM"]
+  },
+  {
+    "topic": "Init Containers",
+    "shortDescription": "Containers that run to completion before any app containers start. Used for setup tasks: waiting for a dependency, running DB migrations, populating a shared volume, or setting file permissions.",
+    "longDescription": "Init containers run sequentially in order — each must exit 0 before the next starts. If an init container fails, the Pod restarts (per `restartPolicy`). App containers only start after all init containers succeed. Init containers can have different images, resource limits, and security contexts than the app container. They share the same network namespace and can write to volumes shared with app containers. Sidecar containers (K8s 1.29+, `restartPolicy: Always` in an init container position) are a new concept — they start with init containers, run alongside app containers, and are terminated last. Use cases: `init: wget -O /data/config.json http://config-service/config` before a config-reading app starts, or `init: until nc -z db 5432; do sleep 1; done` to block until Postgres is ready.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["initContainers", "sidecar", "sequential", "dependency wait", "volume setup"]
+  },
+  {
+    "topic": "Container Lifecycle Hooks",
+    "shortDescription": "`postStart` runs immediately after a container starts (before readiness probe); `preStop` runs just before a container is terminated. Used for initialization logic and graceful shutdown coordination.",
+    "longDescription": "`postStart`: runs asynchronously relative to the container entrypoint — there is no guarantee it runs before the entrypoint. If it fails, the container is killed. Hook types: `exec` (run a command inside the container) or `httpGet` (call an HTTP endpoint). `preStop`: runs synchronously before the SIGTERM is sent to the container process. The total shutdown budget is `terminationGracePeriodSeconds` (default 30s) — it covers both the `preStop` hook duration and the time for the container process to exit. If the process doesn't exit within the budget, it receives SIGKILL. Common pattern: `preStop: sleep 5` to give load balancers time to drain connections before the process receives SIGTERM. Since K8s 1.30, `preStop` can use a `sleep` hook type natively.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["postStart", "preStop", "lifecycle hooks", "graceful shutdown", "SIGTERM"]
+  },
+  {
+    "topic": "Labels and Selectors",
+    "shortDescription": "Labels are arbitrary key-value metadata attached to any Kubernetes object. Selectors filter objects by label — used by Services to find Pods, by ReplicaSets to own Pods, and by kubectl to query resources.",
+    "longDescription": "Label keys have an optional prefix (DNS subdomain, e.g., `app.kubernetes.io/name`) and a name. Values are strings up to 63 chars. Equality selectors: `env=prod, tier!=frontend`. Set-based selectors: `env in (prod, staging)`, `tier notin (frontend)`, `partition` (key exists), `!partition` (key absent). Services and ReplicaSets use equality-only selectors in `spec.selector` (immutable after creation). Deployments, Jobs, and DaemonSets support set-based selectors. `kubectl get pods -l app=myapp` uses selectors. Recommended labels (Kubernetes standard): `app.kubernetes.io/name`, `app.kubernetes.io/instance`, `app.kubernetes.io/version`, `app.kubernetes.io/component`, `app.kubernetes.io/part-of`, `app.kubernetes.io/managed-by`.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["labels", "selectors", "metadata", "equality", "set-based"]
+  },
+  {
+    "topic": "Annotations",
+    "shortDescription": "Non-identifying metadata attached to objects as arbitrary key-value strings. Not used by Kubernetes selectors — intended for tooling, operators, and humans. Values can be large (e.g., JSON blobs).",
+    "longDescription": "Unlike labels, annotations are not indexed and cannot be used in selectors. They carry supplementary information: `kubectl.kubernetes.io/last-applied-configuration` (stored by `kubectl apply`), Ingress controller behavior (`nginx.ingress.kubernetes.io/proxy-read-timeout: '60'`), cert-manager challenge configuration, Prometheus scrape config (`prometheus.io/scrape: 'true'`, `prometheus.io/port: '8080'`), deployment notes, build metadata (CI job URL, git SHA). Annotation keys follow the same prefix/name format as labels. Values are arbitrary strings with no size limit enforced by the API (though etcd has a 1.5 MiB object limit). Operators and admission webhooks heavily use annotations for their configuration.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["annotations", "metadata", "tooling", "Prometheus", "Ingress", "kubectl apply"]
+  },
+  {
+    "topic": "Custom Resource Definition (CRD)",
+    "shortDescription": "Extends the Kubernetes API with new resource types without modifying core Kubernetes code. Once a CRD is installed, users create, read, update, and delete instances of the custom resource using kubectl and the standard API.",
+    "longDescription": "A CRD defines: `group` (API group, e.g., `monitoring.coreos.com`), `versions[]` (with OpenAPI v3 schema for validation), `scope` (Namespaced or Cluster), `names` (kind, plural, singular, shortNames). Once created, the API server auto-generates REST endpoints for the new type. Custom resources are stored in etcd like any other object. CRDs are the foundation for operators — the operator pattern: define a CRD for your application (e.g., `PostgresCluster`), write a controller that watches instances of that CRD and reconciles actual state (creates Pods, Services, PVCs) to match the desired spec. RBAC applies to custom resources just like built-in ones. Admission webhooks can validate and mutate custom resources.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["CRD", "custom resource", "operator", "API extension", "etcd"]
+  },
+  {
+    "topic": "Operator Pattern",
+    "shortDescription": "A Kubernetes-native application that packages human operational knowledge into software. An operator uses a CRD to define its domain object and a controller to automate all lifecycle operations — install, upgrade, backup, failover.",
+    "longDescription": "An operator embodies the expertise of a human operator: it knows how to deploy the app, handle upgrades (stateful, ordered), scale it, take backups, restore from backup, and respond to failures. Examples: Prometheus Operator (manages Prometheus instances, alerting rules, service monitors via CRDs), cert-manager (manages TLS certificates), Strimzi (Kafka on Kubernetes), CloudNativePG (PostgreSQL), Rook (Ceph storage). Frameworks for building operators: controller-runtime (Go, used by kubebuilder and Operator SDK), kopf (Python), JOSDK (Java). The reconcile loop must be idempotent — it may run multiple times for the same desired state. Use `status` subresource to report observed state back to users.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["operator", "controller", "CRD", "reconcile", "kubebuilder", "Operator SDK"]
+  },
+  {
+    "topic": "Admission Webhooks",
+    "shortDescription": "HTTP callbacks invoked by the API server during object create/update/delete — before the object is persisted. Mutating webhooks modify objects (inject sidecars, set defaults); validating webhooks accept or reject them.",
+    "longDescription": "Order of processing: authentication → authorization → mutating admission → object schema validation → validating admission → persist to etcd. Mutating webhooks can add labels, inject sidecar containers (e.g., Istio's envoy proxy, Vault agent), set default resource limits, or inject environment variables. Validating webhooks enforce organizational policies beyond OpenAPI schema (e.g., all Pods must have resource limits, images must come from approved registries). Configuration via `MutatingWebhookConfiguration` / `ValidatingWebhookConfiguration` objects — specify which resources/operations trigger the webhook, failure policy (`Fail` or `Ignore`), and the service or URL. If the webhook server is unavailable and `failurePolicy: Fail`, ALL matching API calls fail — so webhook servers must be highly available (often with a webhook bypass for the `kube-system` namespace).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["admission webhook", "mutating", "validating", "sidecar injection", "policy"]
+  },
+  {
+    "topic": "NetworkPolicy",
+    "shortDescription": "A firewall rule for Pod-to-Pod communication. By default, all Pods can reach all other Pods. A NetworkPolicy selects Pods and specifies which ingress sources and egress destinations are allowed.",
+    "longDescription": "NetworkPolicy is enforced by the CNI plugin — not all CNIs support it (Flannel does not; Calico, Cilium, and Weave do). Spec: `podSelector` (which Pods this policy applies to), `policyTypes` (`Ingress`, `Egress`, or both), `ingress[].from` (allowed sources: `podSelector`, `namespaceSelector`, `ipBlock`), `egress[].to` (allowed destinations) with `ports[]`. If a Pod has any ingress NetworkPolicy, all non-matching ingress traffic is denied (deny-by-default for that Pod). If `podSelector: {}` with no ingress rules, all ingress is denied. An empty `from: []` allows nothing; no `from` key at all allows everything. Common pattern: default-deny-all policy in every namespace, then explicit allow policies. `namespaceSelector` requires the namespace to be labeled.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["NetworkPolicy", "firewall", "CNI", "ingress", "egress", "zero-trust"]
+  },
+  {
+    "topic": "CNI (Container Network Interface)",
+    "shortDescription": "The plugin standard that handles Pod networking — assigning IP addresses to Pods, setting up routing, and enforcing NetworkPolicies. Common CNI plugins: Calico, Flannel, Cilium, Weave, AWS VPC CNI.",
+    "longDescription": "The CNI spec defines how the container runtime calls network plugins: `ADD` (set up networking for a new container, return the IP), `DEL` (tear down on container deletion), `CHECK` (verify network is correct). The kubelet calls the CNI plugin after creating a container's network namespace. Each CNI plugin makes different tradeoffs: Flannel (simple overlay with VXLAN, no NetworkPolicy), Calico (BGP routing or overlay, full NetworkPolicy, eBPF dataplane option), Cilium (eBPF-based, replaces iptables/kube-proxy entirely, L7-aware NetworkPolicy, built-in observability), AWS VPC CNI (native VPC IPs for Pods, no overlay, AWS Security Groups for Pods). Multi-cluster networking: CNI plugins like Cilium support cluster mesh for cross-cluster connectivity.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["CNI", "Calico", "Cilium", "Flannel", "Pod networking", "eBPF"]
+  },
+  {
+    "topic": "CoreDNS",
+    "shortDescription": "The DNS server running in-cluster (as a Deployment in `kube-system`). Resolves Kubernetes Service names to ClusterIPs and Pod hostnames. Every Pod's `/etc/resolv.conf` points to CoreDNS.",
+    "longDescription": "CoreDNS is plugin-based. The `kubernetes` plugin handles cluster DNS resolution. DNS names follow the pattern `<service>.<namespace>.svc.<cluster-domain>` (default cluster domain: `cluster.local`). Pods search the following domains by default: `<namespace>.svc.cluster.local`, `svc.cluster.local`, `cluster.local`, then the node's search domains. Short names like `myservice` resolve by trying each search domain in order. Headless Service DNS: returns individual Pod IPs (A records) instead of a ClusterIP. StatefulSet Pod DNS: `pod-0.myservice.mynamespace.svc.cluster.local`. Custom external DNS: the `forward` plugin proxies non-cluster queries to upstream resolvers. DNS performance: consider tuning the `ndots` option in Pod `dnsConfig` to reduce unnecessary DNS lookups for external names.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["CoreDNS", "DNS", "Service discovery", "cluster.local", "resolv.conf"]
+  },
+  {
+    "topic": "Helm",
+    "shortDescription": "The package manager for Kubernetes. A Helm chart is a collection of templated YAML manifests plus a `values.yaml`. `helm install` renders the templates with values and applies them to the cluster.",
+    "longDescription": "Chart structure: `Chart.yaml` (metadata), `values.yaml` (defaults), `templates/` (Go templates with `{{ .Values.X }}` syntax), `charts/` (chart dependencies). `helm install release-name ./chart --set key=value -f custom-values.yaml` installs a release. `helm upgrade` updates it; `helm rollback` reverts. Release history is stored as Secrets in the namespace. Hooks: `pre-install`, `post-install`, `pre-upgrade`, `post-upgrade`, `pre-delete`, `pre-rollback` — implemented as Jobs or Pods with annotations. Repositories: `helm repo add stable https://...`, `helm search repo`. Helm 3 removed Tiller (the in-cluster server) — all rendering is client-side. OCI registry support: charts can be stored as OCI artifacts (`helm push`/`helm pull oci://...`). Alternatives: Kustomize (no templates, overlay-based, built into kubectl).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Helm", "chart", "values.yaml", "release", "templates", "Kustomize"]
+  },
+  {
+    "topic": "kubectl",
+    "shortDescription": "The command-line tool for interacting with the Kubernetes API server. Reads `~/.kube/config` (kubeconfig) to know which cluster and credentials to use. Almost every cluster operation can be performed with kubectl.",
+    "longDescription": "Essential commands: `apply -f` (declarative create/update), `get` (list resources), `describe` (detailed info + events), `logs` (container logs), `exec -it` (shell into container), `port-forward` (forward local port to Pod), `rollout status/history/undo`, `scale`, `cordon/drain/uncordon` (node maintenance), `top` (resource usage), `auth can-i`, `diff -f` (show what apply would change), `edit` (live edit), `patch` (JSON/YAML/merge patch), `delete`, `create`, `run` (quick Pod), `cp` (copy files to/from Pod). Contexts (`kubectl config use-context`) switch between clusters. Plugins extend kubectl via `kubectl <plugin-name>` — managed by `krew` plugin manager. `kubectl api-resources` lists all resource types.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["kubectl", "CLI", "kubeconfig", "context", "krew"]
+  },
+  {
+    "topic": "kubeconfig",
+    "shortDescription": "The configuration file (default `~/.kube/config`) that kubectl reads to determine which cluster to connect to, which credentials to use, and which namespace is the default. Contains clusters, users, and contexts.",
+    "longDescription": "Structure: `clusters[]` (API server URL + CA cert), `users[]` (credentials: client cert/key, token, or exec plugin for cloud providers like `aws eks get-token`), `contexts[]` (binds a cluster + user + namespace together), `current-context`. Multiple clusters are managed in one file — `kubectl config use-context <name>` switches. `KUBECONFIG` env var can point to multiple files (colon-separated on Unix) — they are merged. Useful commands: `kubectl config get-contexts`, `kubectl config set-context --current --namespace=myns`, `kubectl config view --minify`. Security: kubeconfig files contain sensitive credentials — restrict file permissions, do not commit to git, use short-lived tokens where possible (exec plugins refresh tokens automatically).",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["kubeconfig", "context", "cluster", "credentials", "kubectl config"]
+  },
+  {
+    "topic": "Finalizers",
+    "shortDescription": "Strings in `metadata.finalizers[]` that prevent an object from being deleted until external cleanup is complete. When an object is deleted, it gets a `deletionTimestamp` but is not removed until all finalizers are cleared.",
+    "longDescription": "When `kubectl delete` is called on an object with finalizers: the API server sets `metadata.deletionTimestamp` (the object is now terminating) but does NOT remove it. The object stays in etcd. Controllers watching for objects with their finalizer key must: perform cleanup, then remove their finalizer via a PATCH. Once all finalizers are removed, the API server deletes the object. This enables: cleaning up external resources (cloud load balancers, DNS records) before the Kubernetes object disappears; ensuring PVCs are not deleted while Pods are still running (PVC protection finalizer: `kubernetes.io/pvc-protection`). A dangling finalizer (controller is deleted, orphaned finalizer remains) leaves the object stuck in terminating — fix by manually patching `metadata.finalizers: []`.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["finalizers", "deletion", "terminating", "cleanup", "PVC protection"]
+  },
+  {
+    "topic": "OwnerReferences",
+    "shortDescription": "Links a child object to its parent controller, enabling cascading deletion. When the parent is deleted, all objects with that `ownerReference` are garbage collected automatically.",
+    "longDescription": "`metadata.ownerReferences[]` contains: `apiVersion`, `kind`, `name`, `uid`, `controller: true` (only one owner can be the controller), `blockOwnerDeletion: true` (owner cannot be deleted until this child is gone). Cascading deletion modes: `Foreground` (owner waits for all children with `blockOwnerDeletion: true` to be deleted first), `Background` (owner is deleted immediately, children are garbage collected asynchronously), `Orphan` (delete the owner but leave children). Set with `kubectl delete deployment myapp --cascade=orphan`. The garbage collector controller continuously scans for objects whose owner no longer exists and deletes them. Never set ownerReferences across namespaces — cross-namespace ownership is not supported and leads to undefined behavior.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["ownerReferences", "garbage collection", "cascading delete", "foreground", "orphan"]
+  },
+  {
+    "topic": "securityContext",
+    "shortDescription": "Security settings for a Pod or container: run as a specific UID/GID, drop Linux capabilities, prevent privilege escalation, enable seccomp profiles, and use read-only root filesystems.",
+    "longDescription": "Pod-level `securityContext`: `runAsUser`, `runAsGroup`, `fsGroup` (GID for mounted volumes), `runAsNonRoot` (admission check that UID is not 0), `sysctls` (kernel parameters), `seccompProfile`. Container-level `securityContext` (overrides pod-level): `runAsUser`, `runAsNonRoot`, `allowPrivilegeEscalation: false` (prevents setuid binaries from gaining privileges — always set this), `readOnlyRootFilesystem: true` (prevents writes to container FS), `capabilities.drop: ["ALL"]` (drop all Linux capabilities), `capabilities.add` (add only what's needed, e.g., `NET_BIND_SERVICE`), `privileged: true` (gives the container nearly all host kernel capabilities — avoid). Seccomp: `type: RuntimeDefault` applies the container runtime's default syscall filter. AppArmor: set via annotation on the Pod.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["securityContext", "runAsUser", "capabilities", "readOnlyRootFilesystem", "seccomp"]
+  },
+  {
+    "topic": "PodSecurityAdmission (PSA)",
+    "shortDescription": "The built-in admission controller (since K8s 1.25, replacing deprecated PodSecurityPolicy) that enforces pod security standards at the namespace level using three policy levels: Privileged, Baseline, and Restricted.",
+    "longDescription": "Policy levels: `Privileged` (no restrictions — for system namespaces), `Baseline` (prevents known privilege escalations — blocks `hostPID`, `hostNetwork`, `privileged` containers, most host volume types), `Restricted` (hardened — requires `runAsNonRoot`, `allowPrivilegeEscalation: false`, drops all capabilities, requires seccomp). Enforce modes per namespace via labels: `pod-security.kubernetes.io/enforce: restricted`, `pod-security.kubernetes.io/warn: baseline` (shows warning but allows), `pod-security.kubernetes.io/audit: restricted` (logs to audit, allows). These can be combined — e.g., enforce baseline, warn on restricted violations. The `kube-system` namespace uses the privileged level. For fine-grained policies beyond PSA standards, use OPA Gatekeeper or Kyverno admission controllers.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["PodSecurityAdmission", "PSA", "Restricted", "Baseline", "Privileged", "Gatekeeper", "Kyverno"]
+  },
+  {
+    "topic": "etcd Backup and Disaster Recovery",
+    "shortDescription": "The process of snapshoting etcd data and restoring a cluster from it. Since all cluster state lives in etcd, a backup is effectively a full cluster backup.",
+    "longDescription": "`etcdctl snapshot save /backup/etcd.db` creates a consistent snapshot. The snapshot file contains all keys at a point in time. Restore: stop the API server, run `etcdctl snapshot restore /backup/etcd.db --data-dir=/var/lib/etcd-restored`, reconfigure etcd to use the new data directory, restart etcd and API server. Restore must be done on all etcd members (each gets its own restore with a unique `--name` and `--initial-advertise-peer-urls`). After restore, cluster state will not match running nodes — Pods, Services, and node registrations that existed at backup time may differ from reality. Automate backups: run the snapshot command on a cron schedule, store snapshots in object storage (S3, GCS). Managed Kubernetes services (EKS, GKE, AKS) handle etcd backup automatically.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["etcd backup", "disaster recovery", "snapshot", "etcdctl", "restore"]
+  },
+  {
+    "topic": "Rolling Update Strategy",
+    "shortDescription": "The default Deployment update strategy. Gradually replaces old Pods with new ones, controlling the rate via `maxSurge` and `maxUnavailable`. Allows zero-downtime updates when configured correctly.",
+    "longDescription": "With `maxSurge: 1, maxUnavailable: 0`: the Deployment creates one new Pod, waits for it to become Ready, then terminates one old Pod — repeating until all Pods are updated. No traffic is lost (always at least `replicas` Pods ready) but update takes longer. With `maxSurge: 0, maxUnavailable: 1`: the Deployment terminates one old Pod first, then creates a new one — faster update but brief reduction in capacity. The readiness probe on new Pods gates progression — if a new Pod fails to become Ready, the Deployment pauses and does not terminate more old Pods. Rollback: `kubectl rollout undo` swaps back to the previous ReplicaSet. Deployment `progressDeadlineSeconds` (default 600) marks the rollout as failed if it stalls.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["rolling update", "maxSurge", "maxUnavailable", "zero-downtime", "Deployment"]
+  },
+  {
+    "topic": "Headless Service",
+    "shortDescription": "A Service with `clusterIP: None`. No virtual IP is allocated — DNS returns individual Pod IP addresses as A records instead of a single ClusterIP. Required for StatefulSets and direct Pod-to-Pod discovery.",
+    "longDescription": "When a client resolves the DNS name of a headless Service, CoreDNS returns a list of all ready Pod IPs (one A record per Pod). The client chooses how to connect — it can connect to all, pick one, or implement its own load balancing. StatefulSet Pods get stable DNS names via the headless Service: `pod-0.myservice.mynamespace.svc.cluster.local`. This is essential for stateful clusters (Cassandra, MongoDB, Kafka) where each node has a different role and peers need to discover each other by stable name. A headless Service with no selector does not create Endpoints — you can manually create an Endpoints object to point it at external IPs, or use `ExternalName` for that purpose.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["headless service", "clusterIP: None", "DNS", "StatefulSet", "direct Pod access"]
+  },
+  {
+    "topic": "Endpoints and EndpointSlices",
+    "shortDescription": "Endpoints is the object that lists the IPs and ports of healthy Pods backing a Service. EndpointSlice (newer) shards this into smaller objects for scalability. kube-proxy reads these to program routing rules.",
+    "longDescription": "The Endpoints controller watches Services and Pods, and updates the `Endpoints` object with the IPs of Pods that have matching labels AND pass their readiness probe. kube-proxy and CoreDNS watch Endpoints/EndpointSlices for routing decisions. Problem with Endpoints at scale: a single Service with 1000 Pods has a 1000-entry Endpoints object. Any single Pod change causes the entire object to be re-written and re-distributed to every node. EndpointSlice (default since K8s 1.21) shards endpoints into slices of up to 100 entries each — only the changed slice needs to be updated and distributed. This dramatically reduces API server and network load for large Services. `endpointslice.kubernetes.io/managed-by` tracks which controller manages each slice.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Endpoints", "EndpointSlice", "Service routing", "kube-proxy", "scalability"]
+  },
+  {
+    "topic": "PriorityClass",
+    "shortDescription": "Assigns a numeric scheduling priority to Pods. Higher-priority Pods are scheduled first. If a high-priority Pod cannot be placed, the scheduler may preempt (evict) lower-priority Pods to make room.",
+    "longDescription": "PriorityClass is cluster-scoped: `value` (integer, higher = more important), `globalDefault` (exactly one PriorityClass can be the default), `preemptionPolicy` (`PreemptLowerPriority` default, or `Never`). Pods reference it via `spec.priorityClassName`. System PriorityClasses: `system-cluster-critical` (2000000000) and `system-node-critical` (2000001000) — used by critical system Pods (CoreDNS, kube-proxy). Preemption: the scheduler identifies the minimum set of lower-priority Pods to evict to free enough resources, evicts them (gracefully, respecting PDB), and schedules the high-priority Pod. Use carefully — preemption can disrupt lower-priority workloads; set `preemptionPolicy: Never` for Pods that should get priority for scheduling order but not displace others.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["PriorityClass", "preemption", "scheduling priority", "system-cluster-critical"]
+  },
+  {
+    "topic": "Pod Topology Spread and Multi-AZ",
+    "shortDescription": "Running workloads across multiple availability zones (AZ) ensures that an AZ outage does not take down the entire application. Achieved via topologySpreadConstraints, node affinity, and zone-aware storage.",
+    "longDescription": "Zone-aware scheduling: `topologySpreadConstraints` with `topologyKey: topology.kubernetes.io/zone` spreads Pods across zones. Nodes are labeled with the zone by cloud providers automatically. Zone-aware storage: use a StorageClass with `volumeBindingMode: WaitForFirstConsumer` — the PVC is bound only after the Pod is scheduled, ensuring the PV is created in the same zone as the Pod. Without this, the PV may be created in a different zone and the Pod can never start. Zone-aware Services (`externalTrafficPolicy: Local` or topology hints) route traffic to same-zone endpoints to reduce cross-AZ latency and data transfer costs. Cluster Autoscaler: configure node groups per AZ and `--balance-similar-node-groups` to keep node counts balanced.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["multi-AZ", "availability zone", "topologySpreadConstraints", "zone-aware storage"]
+  },
+  {
+    "topic": "Ingress Controller",
+    "shortDescription": "The actual software that reads Ingress objects and configures a reverse proxy to route external HTTP/HTTPS traffic to Services. The Ingress resource is useless without one. Common choices: NGINX, Traefik, HAProxy, AWS ALB, GCE.",
+    "longDescription": "The Ingress Controller runs as a Deployment (or DaemonSet) in the cluster and watches Ingress objects. It dynamically configures its underlying proxy (NGINX, Envoy, HAProxy) to implement the routing rules. Different controllers have different capabilities: NGINX Ingress Controller (most common, rich annotation set, supports WebSockets, gRPC), Traefik (automatic TLS via Let's Encrypt, TCP/UDP routing, dashboard), HAProxy Ingress (high performance), AWS Load Balancer Controller (provisions native ALB/NLB, integrates with ACM certs and WAF), AGIC (Azure Application Gateway). IngressClass resource (K8s 1.18+) lets multiple controllers coexist — each Ingress specifies its class via `spec.ingressClassName` or `ingressclass.kubernetes.io/is-default-class` annotation.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Ingress Controller", "NGINX", "Traefik", "ALB", "IngressClass", "reverse proxy"]
+  },
+  {
+    "topic": "Service Mesh",
+    "shortDescription": "An infrastructure layer that handles service-to-service communication — mutual TLS, traffic management (retries, timeouts, circuit breaking), observability (metrics, traces, logs), and access policy. Common options: Istio, Linkerd, Cilium Service Mesh.",
+    "longDescription": "Implemented with a sidecar proxy (Istio/Linkerd) injected into every Pod that intercepts all inbound and outbound traffic, OR with eBPF (Cilium) which avoids sidecars entirely. Capabilities: mTLS (automatic certificate rotation, identity-based auth between services), traffic splitting (canary by weight: 90% v1 / 10% v2), fault injection (testing resilience by injecting delays or errors), circuit breaking (stop calling a failing service), retries, timeouts. Observability: the mesh captures request-level metrics (latency, error rate, throughput) and distributed traces (Jaeger, Zipkin) without code changes. Control plane (Istiod) distributes configuration to all proxies via xDS API. Cost: sidecar adds latency (~1ms per hop), memory (~50MB per proxy), and operational complexity.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["service mesh", "Istio", "Linkerd", "mTLS", "traffic management", "observability"]
+  },
+  {
+    "topic": "Kubernetes Events",
+    "shortDescription": "Objects that record notable occurrences in the cluster — Pod scheduling decisions, image pull failures, readiness probe failures, autoscaling actions. Visible via `kubectl describe` or `kubectl get events`.",
+    "longDescription": "Events have: `reason` (short string, e.g., `Pulled`, `Failed`, `BackOff`), `message` (human-readable detail), `involvedObject` (the resource that triggered the event), `type` (`Normal` or `Warning`), `count` (deduplicated event count), `firstTimestamp`, `lastTimestamp`, `source` (component and node). Events are stored in etcd but have a short retention period (default 1 hour) — do not rely on them for long-term diagnostics. They are deleted by a garbage collector to avoid etcd bloat. For persistent event storage, export to external systems (Datadog, Elasticsearch) using tools like `kube-event-exporter` or `eventrouter`. `kubectl get events --sort-by='.lastTimestamp'` and `kubectl get events --field-selector involvedObject.name=mypod` are the most useful queries.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["events", "kubectl describe", "warning", "reason", "observability"]
+  },
+  {
+    "topic": "Resource Metrics Pipeline",
+    "shortDescription": "The metrics-server collects CPU and memory usage of Pods and nodes from each kubelet's summary API and exposes them via the `metrics.k8s.io` API. Powers `kubectl top` and HPA CPU/memory scaling.",
+    "longDescription": "metrics-server aggregates resource metrics in-memory — it does not store historical data and has no persistent storage. `kubectl top nodes` shows node CPU/memory; `kubectl top pods` shows Pod CPU/memory. HPA queries `metrics.k8s.io` every 15 seconds to make scaling decisions. For custom and external metrics (e.g., HTTP request rate, queue depth), deploy Prometheus + Prometheus Adapter — the adapter bridges Prometheus queries to the `custom.metrics.k8s.io` and `external.metrics.k8s.io` APIs that HPA can consume. For long-term metrics storage and dashboards, the CNCF-recommended stack is Prometheus + Grafana. kube-state-metrics exposes object-level metrics (Deployment replicas, Pod phase, resource limits/requests) as Prometheus metrics.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["metrics-server", "Prometheus", "HPA", "kubectl top", "kube-state-metrics", "Grafana"]
+  },
+  {
+    "topic": "Audit Logging",
+    "shortDescription": "Kubernetes records every API server request to an audit log — who called what API, on which resource, at what time, and what the outcome was. Essential for security compliance, incident investigation, and detecting unauthorized access.",
+    "longDescription": "Configured via an audit policy file (`--audit-policy-file` on the API server) that specifies which requests to log and at what level: `None` (don't log), `Metadata` (log request metadata only — no body), `Request` (metadata + request body), `RequestResponse` (metadata + request + response body). Stages: `RequestReceived`, `ResponseStarted`, `ResponseComplete`, `Panic`. Backends: `--audit-log-path` (file), `--audit-webhook-config-file` (HTTP endpoint for real-time streaming). Audit logs can be large — use targeted policies (log `RequestResponse` for Secrets, `Metadata` for everything else). Integrate with SIEM systems (Splunk, Elastic) for alerting on suspicious patterns: `kubectl exec` into production Pods, Secret reads from unusual ServiceAccounts, ClusterRole modifications.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["audit logging", "API server", "security", "compliance", "policy"]
+  },
+  {
+    "topic": "Kustomize",
+    "shortDescription": "A template-free configuration customization tool built into kubectl (`kubectl apply -k`). Uses overlays to patch base YAML manifests for different environments (dev/staging/prod) without duplicating files.",
+    "longDescription": "Structure: `base/` (common manifests + `kustomization.yaml`), `overlays/<env>/` (patches + `kustomization.yaml` that references the base). A `kustomization.yaml` specifies: `resources` (base files or directories), `patches` (strategic merge or JSON patches), `configMapGenerator` / `secretGenerator` (creates ConfigMaps/Secrets from files or literals, and appends a content hash to the name for automatic rollouts on change), `images` (override image tags), `namespace` (set namespace on all resources), `commonLabels` / `commonAnnotations`. Strategic merge patch: overlay YAML is deep-merged with the base. JSON patch: explicit add/replace/remove operations. Kustomize is simpler than Helm (no templating language) but less flexible — no conditionals or loops.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["Kustomize", "overlays", "patches", "configMapGenerator", "kubectl apply -k"]
+  }
+]

@@ -1,4 +1,4 @@
-[
+ [
   {
     "topic": "forEach vs for",
     "shortDescription": "forEach iterates over an array with a callback and is more readable, but cannot be stopped early. for gives full control including break, continue, and index manipulation.",

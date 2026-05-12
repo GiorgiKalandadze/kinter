@@ -1,0 +1,233 @@
+[
+  {
+    "topic": "Async/Await",
+    "shortDescription": "Syntactic sugar over Promises that lets you write asynchronous code in a linear, synchronous-looking style. `await` pauses execution of an `async` function until the Promise settles, without blocking the event loop.",
+    "longDescription": "An `async` function always returns a Promise. Inside it, `await` can be placed before any Promise-returning expression — execution suspends at that point and resumes once the Promise resolves. Rejections surface as thrown exceptions, so `try/catch` handles errors naturally. Under the hood the engine rewrites the function into a state machine, similar to explicit `.then()` chaining but far more readable. Common pitfalls: forgetting `await` (causing an unhandled Promise), running independent async operations sequentially instead of in parallel with `Promise.all`, and top-level `await` (supported in ES modules but not CommonJS).",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["async", "await", "Promise", "ES2017"]
+  },
+  {
+    "topic": "Buffer",
+    "shortDescription": "A fixed-size chunk of raw binary memory allocated outside the V8 heap. Used whenever Node.js handles binary data — TCP streams, file I/O, crypto operations — before it is decoded into a string.",
+    "longDescription": "Buffers are instances of `Uint8Array` and expose methods for reading/writing integers, floats, and strings at arbitrary byte offsets. They are allocated with `Buffer.alloc(size)` (zeroed), `Buffer.allocUnsafe(size)` (faster, uninitialized — may contain old data), or `Buffer.from(data)`. Encoding matters: `buf.toString('utf8')`, `buf.toString('hex')`, `buf.toString('base64')`. Because Buffers live outside the V8 heap, garbage collection does not reclaim them the same way; large Buffers that outlive their use can cause memory pressure. In streams, chunks arrive as Buffers unless the stream is put into object mode.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["Buffer", "binary", "memory", "streams"]
+  },
+  {
+    "topic": "Callback",
+    "shortDescription": "A function passed as an argument to another function and invoked once an operation completes. Node.js uses the error-first callback convention: the first argument is an error (or null), subsequent arguments are results.",
+    "longDescription": "The error-first pattern (`(err, result) => {}`) was the original async primitive in Node.js before Promises. Every core API that performs I/O accepts a callback as its last argument. Problems with raw callbacks: callback hell (deeply nested pyramids), no built-in error propagation, difficulty composing multiple async operations. `util.promisify` wraps an error-first callback function to return a Promise. Modern Node.js APIs increasingly expose a Promise-based variant (e.g., `fs.promises`), but callbacks remain important to understand because all internal C++ bindings ultimately deliver results via callbacks.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["callback", "error-first", "async", "convention"]
+  },
+  {
+    "topic": "Child Process",
+    "shortDescription": "A separate OS process spawned by a Node.js parent via the `child_process` module. Used to run shell commands, Python scripts, or CPU-intensive tasks without blocking the parent's event loop.",
+    "longDescription": "Four main methods: `exec` (shell command, buffers output), `execFile` (binary directly, no shell), `spawn` (streaming stdin/stdout/stderr, most flexible), `fork` (spawns another Node.js process and sets up an IPC channel for message passing). Each child gets its own memory space — no shared heap. IPC via `fork` uses `process.send()`/`process.on('message')` and serializes messages as JSON. Security note: never pass unsanitized user input to `exec` — use `execFile` or `spawn` with an argument array instead to prevent shell injection.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["child_process", "spawn", "exec", "fork", "IPC"]
+  },
+  {
+    "topic": "Cluster Module",
+    "shortDescription": "A built-in module that forks multiple worker processes sharing the same server port, allowing a Node.js app to utilize all CPU cores without external tooling.",
+    "longDescription": "The master process calls `cluster.fork()` N times (typically once per CPU). All workers bind to the same port; the master distributes incoming connections using round-robin (default on Linux/macOS) or lets the OS schedule them. Workers run full Node.js event loops in separate processes and do not share memory. If a worker crashes, the master can detect it via `cluster.on('exit')` and fork a replacement. Compared to `worker_threads`, cluster is simpler for server scaling but heavier per unit (full process vs. thread). PM2 uses clustering internally via its cluster mode.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["cluster", "multi-core", "fork", "scaling"]
+  },
+  {
+    "topic": "CommonJS (CJS)",
+    "shortDescription": "The original module system in Node.js, using `require()` to import and `module.exports` / `exports` to expose values. Modules are loaded synchronously and cached after the first load.",
+    "longDescription": "When `require('./foo')` is called, Node resolves the path, reads and compiles the file, executes it, and caches `module.exports` in `require.cache` keyed by absolute path. Subsequent requires return the cached object — so mutations to `module.exports` are visible to all importers. Circular requires are handled by returning the partially-constructed `exports` of the in-progress module. CommonJS cannot be statically analyzed (exports can be computed at runtime), which makes tree-shaking impossible. Node.js still defaults to CJS for `.js` files unless `\"type\": \"module\"` is set in `package.json`.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["CJS", "require", "module.exports", "modules"]
+  },
+  {
+    "topic": "ECMAScript Modules (ESM)",
+    "shortDescription": "The official JavaScript module standard using `import` / `export` syntax. Node.js supports ESM natively for `.mjs` files or `.js` files inside a package with `\"type\": \"module\"` in package.json.",
+    "longDescription": "ESM is parsed before execution — `import` bindings are live read-only views of the exporting module's namespace, not copies. This enables static analysis and tree-shaking. ESM modules are loaded asynchronously; top-level `await` is supported. Key differences from CJS: no `__dirname` / `__filename` (use `import.meta.url`), no `require` (use `createRequire` if you must mix), `.js` extensions required in relative imports. Interop: CJS can be `import`ed from ESM (default export = `module.exports`), but ESM cannot be `require`d from CJS without dynamic `import()`. Dual-package (exposing both CJS and ESM) is possible via the `exports` field in package.json.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["ESM", "import", "export", "modules", "ES2015"]
+  },
+  {
+    "topic": "Event Emitter",
+    "shortDescription": "The core pub-sub mechanism in Node.js. Objects that extend `EventEmitter` can emit named events and register listeners with `.on()`, `.once()`, and `.off()`.",
+    "longDescription": "All Node.js streams, the HTTP server, and many other core objects are EventEmitters. Key methods: `emitter.emit(event, ...args)` calls all listeners synchronously in registration order; `emitter.on(event, fn)` registers a persistent listener; `emitter.once(event, fn)` fires once then auto-removes; `emitter.removeListener` / `.off` removes a specific listener. The special `error` event is fatal if no listener exists — always attach `on('error', handler)`. Memory leak warning: Node prints a warning when more than 10 listeners attach to a single event (configurable via `setMaxListeners`). Custom classes extend `EventEmitter` to gain these capabilities without boilerplate.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["EventEmitter", "events", "pub-sub", "listeners"]
+  },
+  {
+    "topic": "Event Loop",
+    "shortDescription": "The mechanism that allows Node.js to perform non-blocking I/O on a single thread by offloading operations to the OS kernel or libuv thread pool and processing their completions in sequential phases.",
+    "longDescription": "The event loop has six phases executed in order each iteration (tick): (1) timers — runs callbacks scheduled by `setTimeout`/`setInterval` whose delay has expired; (2) pending callbacks — I/O callbacks deferred to the next loop; (3) idle/prepare — internal use; (4) poll — retrieves new I/O events and blocks here if the queue is empty and no timers are pending; (5) check — runs `setImmediate` callbacks; (6) close callbacks — e.g., `socket.on('close')`. Between each phase, Node drains the microtask queues: `process.nextTick` callbacks first, then resolved Promise callbacks. This ordering is critical for understanding execution order in complex async code.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["event loop", "phases", "libuv", "microtasks"]
+  },
+  {
+    "topic": "Express.js",
+    "shortDescription": "The most popular minimal web framework for Node.js. It wraps Node's `http` module with a routing layer, middleware pipeline, and request/response helpers.",
+    "longDescription": "Core concepts: `app.use(path?, middleware)` mounts middleware globally or at a path prefix; `app.get/post/put/delete(path, ...handlers)` registers route handlers; `Router` objects group related routes into mountable sub-apps. Middleware functions receive `(req, res, next)` — calling `next()` passes control to the next middleware, `next(err)` skips to the error handler (4-arg `(err, req, res, next)`). Express does not include a body parser, authentication, or database layer — these are separate packages (e.g., `express.json()` built in since v4.16, `passport` for auth). Alternatives: Fastify (faster, schema-based), Koa (async-native, no built-in routing), Hapi (enterprise features).",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["Express", "framework", "middleware", "routing"]
+  },
+  {
+    "topic": "fs Module",
+    "shortDescription": "Node's built-in file system module. Provides both callback-based (`fs.*`), Promise-based (`fs.promises.*`), and synchronous (`fs.*Sync`) APIs for reading, writing, watching, and manipulating files and directories.",
+    "longDescription": "Common operations: `fs.readFile` / `fs.promises.readFile` (read entire file into memory), `fs.createReadStream` (stream large files), `fs.writeFile` / `fs.createWriteStream` (write), `fs.stat` (file metadata), `fs.mkdir`, `fs.readdir`, `fs.watch` (file system events). The sync variants (`readFileSync`, etc.) block the event loop and should only be used at startup or in CLI scripts. `fs.promises.readFile` returns a Buffer by default — pass `{ encoding: 'utf8' }` to get a string. Path handling: always use `path.join()` or `path.resolve()` rather than string concatenation to avoid cross-platform issues.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["fs", "file system", "streams", "I/O"]
+  },
+  {
+    "topic": "Global Object",
+    "shortDescription": "In Node.js, `global` is the top-level object (equivalent to `window` in browsers). Variables declared without `var/let/const` at the top level of a CommonJS module do NOT become global — they are scoped to the module.",
+    "longDescription": "Truly global variables available everywhere: `global`, `process`, `Buffer`, `setImmediate`, `clearImmediate`, `setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`, `queueMicrotask`, `console`, `__dirname`, `__filename` (CJS only), `require` (CJS only). In ESM, `__dirname` and `__filename` are not defined — use `new URL('.', import.meta.url).pathname` instead. Polluting the global scope is an anti-pattern; prefer explicit imports. `globalThis` is the spec-compliant cross-environment reference to the global object (works in Node.js, browsers, and web workers).",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["global", "process", "globalThis", "scope"]
+  },
+  {
+    "topic": "HTTP Module",
+    "shortDescription": "Node's built-in `http` (and `https`) module for creating servers and making HTTP requests without any third-party dependency. The foundation that frameworks like Express build on.",
+    "longDescription": "`http.createServer((req, res) => {})` creates a server. `req` is an `IncomingMessage` (readable stream with `method`, `url`, `headers`); `res` is a `ServerResponse` (writable stream). You must call `res.end()` or `res.write()` + `res.end()` for every request or the connection hangs. For outgoing requests, `http.request(options, callback)` or `http.get(url, callback)`. The response body must be consumed (it's a stream) or the connection stays open. In production, use `https` for TLS or offload TLS to a reverse proxy. For richer HTTP clients, `fetch` (built into Node ≥ 18 via undici) or `axios` are preferred over the raw `http` module.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["http", "https", "server", "IncomingMessage"]
+  },
+  {
+    "topic": "libuv",
+    "shortDescription": "The C library that powers Node.js's event loop and async I/O. It provides a thread pool for operations the OS cannot make truly async (file I/O, DNS lookups, crypto), and uses OS-native polling (epoll, kqueue, IOCP) for networking.",
+    "longDescription": "libuv was extracted from Node.js and is now a standalone project. Its thread pool (default size 4, set via `UV_THREADPOOL_SIZE` env var, max 1024) handles: `fs` operations, `dns.lookup`, `crypto.randomBytes`, `crypto.pbkdf2`, and `zlib`. Networking (TCP, UDP, pipes, TTY) uses OS async primitives and never touches the thread pool — this is why Node can handle thousands of simultaneous connections. The event loop itself is implemented in libuv, including timer management via a min-heap and the poll phase that blocks until I/O is ready or the next timer fires.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["libuv", "thread pool", "event loop", "epoll", "kqueue"]
+  },
+  {
+    "topic": "Middleware",
+    "shortDescription": "A function in the request-response pipeline that has access to `req`, `res`, and `next`. Middleware can execute code, modify the request/response objects, end the cycle, or call the next middleware.",
+    "longDescription": "In Express-style frameworks, middleware is the primary composition mechanism. Error-handling middleware has a four-parameter signature `(err, req, res, next)` and is only invoked when `next(err)` is called. Types: application-level (mounted on `app`), router-level (mounted on a `Router`), built-in (`express.json()`, `express.static()`), third-party (`helmet`, `cors`, `morgan`). Order matters — middleware runs in the order it is registered. A middleware that does not call `next()` terminates the chain. The concept generalizes beyond Express: Koa uses an `async (ctx, next)` onion model, Fastify uses hooks, but the pattern is the same.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["middleware", "Express", "pipeline", "next"]
+  },
+  {
+    "topic": "module.exports vs exports",
+    "shortDescription": "`module.exports` is the actual object returned by `require()`. `exports` is an initial reference to the same object. Reassigning `exports` breaks the link; only reassigning `module.exports` changes what callers receive.",
+    "longDescription": "At module load time, Node runs roughly `exports = module.exports = {}`. You can add properties to either: `exports.foo = 1` and `module.exports.foo = 1` are equivalent. But `exports = { foo: 1 }` reassigns the local variable — `module.exports` is still `{}`. `module.exports = { foo: 1 }` correctly replaces the exported object. Common pattern: use `exports.X` for named exports; use `module.exports = fn` when the module's primary export is a single function or class. In ESM this distinction disappears — `export` declarations are explicit and unambiguous.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["module.exports", "exports", "CJS", "require"]
+  },
+  {
+    "topic": "npm (Node Package Manager)",
+    "shortDescription": "The default package manager for Node.js. Manages dependencies declared in `package.json`, resolves version ranges, writes `package-lock.json` for reproducible installs, and publishes packages to the npm registry.",
+    "longDescription": "Key commands: `npm install` (install all deps from `package.json`), `npm install pkg` (add dependency), `npm install -D pkg` (add devDependency), `npm ci` (clean install from lockfile — preferred in CI), `npm run <script>` (run a script defined in `package.json`), `npm publish` (publish to registry). Version ranges: `^1.2.3` allows minor/patch upgrades, `~1.2.3` allows only patch upgrades, `1.2.3` is exact. `node_modules` should be gitignored; the lockfile should be committed. Alternatives: `yarn` (parallel installs, workspaces), `pnpm` (hard-links, strict isolation, fastest disk usage). `npx` runs a package binary without global install.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["npm", "package manager", "package.json", "node_modules"]
+  },
+  {
+    "topic": "package.json",
+    "shortDescription": "The manifest file for a Node.js project. Declares the project name, version, entry point, scripts, dependencies, devDependencies, and configuration for tools.",
+    "longDescription": "Key fields: `name` and `version` (required for publishing), `main` (CJS entry point), `module` (ESM entry, unofficial but understood by bundlers), `exports` (precise entry point map, overrides `main` when present), `scripts` (run with `npm run`), `dependencies` (needed at runtime), `devDependencies` (only needed during development/build), `peerDependencies` (expected to be provided by the consumer), `engines` (Node.js version requirement), `type` (`\"module\"` enables ESM for `.js` files). The `exports` field is the modern way to control what a package exposes: it supports conditional exports (`import`, `require`, `default`) and can prevent access to internal paths.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["package.json", "dependencies", "scripts", "exports"]
+  },
+  {
+    "topic": "Path Module",
+    "shortDescription": "Built-in module for working with file and directory paths in a cross-platform way. Always prefer it over string concatenation to handle differences between Unix (`/`) and Windows (`\\`) separators.",
+    "longDescription": "Key methods: `path.join(...segments)` — joins segments with the platform separator and normalizes; `path.resolve(...segments)` — resolves to an absolute path starting from `process.cwd()`; `path.dirname(p)` — directory portion; `path.basename(p, ext?)` — filename; `path.extname(p)` — extension including the dot; `path.parse(p)` — `{ root, dir, base, name, ext }`; `path.relative(from, to)` — relative path between two absolutes. `__dirname` (CJS) gives the directory of the current module — combine with `path.join(__dirname, 'file.txt')` to build paths relative to the source file rather than `process.cwd()`.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["path", "dirname", "join", "resolve", "cross-platform"]
+  },
+  {
+    "topic": "process Object",
+    "shortDescription": "A global object representing the current Node.js process. Provides access to environment variables, command-line arguments, working directory, stdin/stdout/stderr, exit codes, and lifecycle events.",
+    "longDescription": "Commonly used: `process.env` (environment variables — always strings), `process.argv` (array starting with `node` path and script path, then args), `process.cwd()` (current working directory), `process.exit(code)` (terminate — 0 for success, non-zero for error), `process.pid`, `process.version`, `process.platform` (`'linux'`, `'darwin'`, `'win32'`). Streams: `process.stdin`, `process.stdout`, `process.stderr`. Events: `process.on('uncaughtException', fn)` — catches unhandled synchronous throws (last resort, not for normal flow); `process.on('unhandledRejection', fn)` — unhandled Promise rejections; `process.on('SIGTERM', fn)` — handle shutdown signals for graceful termination. `process.nextTick(fn)` schedules a callback before the next event loop iteration and before any I/O.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["process", "env", "argv", "nextTick", "signals"]
+  },
+  {
+    "topic": "Promise",
+    "shortDescription": "An object representing the eventual completion or failure of an asynchronous operation. A Promise is in one of three states: pending, fulfilled, or rejected — and transitions are permanent.",
+    "longDescription": "Created with `new Promise((resolve, reject) => { ... })`. Consumers chain with `.then(onFulfilled, onRejected)` and `.catch(onRejected)`, each returning a new Promise. `.finally(fn)` runs regardless of outcome. Static helpers: `Promise.all(arr)` — resolves when all resolve, rejects on first rejection; `Promise.allSettled(arr)` — waits for all regardless of outcome; `Promise.race(arr)` — settles with the first to settle; `Promise.any(arr)` — resolves with the first to fulfill; `Promise.resolve(v)` / `Promise.reject(e)` — create pre-settled Promises. Unhandled rejections crash Node.js since v15. Always either return a Promise chain or wrap in try/catch when using await.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["Promise", "async", "resolve", "reject", "chaining"]
+  },
+  {
+    "topic": "process.nextTick",
+    "shortDescription": "Schedules a callback to run after the current operation completes but before the event loop proceeds to its next phase. It drains entirely before any I/O or timer callbacks.",
+    "longDescription": "`process.nextTick` is not technically part of the event loop — its queue is processed after every C++ → JS boundary crossing, before the event loop phases resume. This makes it execute before `Promise` microtasks in older Node.js versions, but since Node 11 the order is: nextTick queue, then Promise microtask queue, both between each event loop phase. Use case: deferring a callback to give callers a chance to set up event listeners before an event fires synchronously. Overuse can starve I/O — if nextTick callbacks keep adding more nextTick callbacks, the event loop never advances. Prefer `setImmediate` or `queueMicrotask` when order relative to I/O matters.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["nextTick", "microtasks", "event loop", "scheduling"]
+  },
+  {
+    "topic": "setImmediate",
+    "shortDescription": "Schedules a callback to run in the check phase of the event loop — after all I/O callbacks in the current poll phase complete, but before timers. Useful for breaking up CPU work without blocking I/O.",
+    "longDescription": "`setImmediate(fn)` places `fn` in the check phase queue. It differs from `setTimeout(fn, 0)` in that `setImmediate` always runs before timers when called inside an I/O callback (the poll phase has just completed). Outside an I/O callback the order between the two is non-deterministic. Unlike `process.nextTick`, `setImmediate` callbacks do not drain before I/O — they interleave naturally, making them safer for recursive scheduling. `clearImmediate(handle)` cancels a pending callback. Common use: chunking a CPU-intensive loop so that each chunk yields to the event loop, keeping the server responsive.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["setImmediate", "event loop", "check phase", "scheduling"]
+  },
+  {
+    "topic": "Streams",
+    "shortDescription": "An abstraction for working with streaming data — reading or writing in chunks rather than buffering everything in memory. Node.js has four stream types: Readable, Writable, Duplex, and Transform.",
+    "longDescription": "Readable streams emit `data` events in flowing mode or are consumed with `for await...of` / `.read()` in paused mode. Writable streams accept `.write(chunk)` and `.end()`. Duplex is both readable and writable (e.g., TCP socket). Transform is a Duplex where output is derived from input (e.g., `zlib.createGzip()`). Pipe: `readable.pipe(writable)` connects them, handles backpressure automatically, and forwards `end`. `pipeline(src, ...transforms, dest, callback)` from `stream` module is the safe version (handles errors and cleanup). The `stream/promises` variant returns a Promise. Backpressure: when the writable's internal buffer is full, `.write()` returns `false` — the readable should pause and wait for the `drain` event.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["streams", "Readable", "Writable", "pipe", "backpressure"]
+  },
+  {
+    "topic": "V8 Engine",
+    "shortDescription": "Google's open-source JavaScript and WebAssembly engine, written in C++. Node.js embeds V8 to compile and execute JavaScript. V8 compiles JS to native machine code via JIT compilation rather than interpreting it.",
+    "longDescription": "V8's pipeline: parse JS → AST → Ignition bytecode interpreter → TurboFan optimizing JIT compiler for hot functions. Optimizations include hidden classes (shapes) for fast property access, inline caching, escape analysis, and loop unrolling. Deoptimization occurs when assumptions are violated (e.g., a property changes type). V8 manages its own heap with a generational garbage collector: young generation (Scavenger, fast) and old generation (Mark-Sweep-Compact, slower). Node.js exposes V8 internals via `v8` module: `v8.getHeapStatistics()`, `v8.writeHeapSnapshot()`. The `--max-old-space-size` flag sets the V8 heap limit in MB (default ~1.5 GB on 64-bit).",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["V8", "JIT", "garbage collection", "heap", "Ignition", "TurboFan"]
+  },
+  {
+    "topic": "Worker Threads",
+    "shortDescription": "True OS threads within a single Node.js process, sharing the same memory heap via `SharedArrayBuffer`. Used for CPU-intensive JavaScript work that would block the event loop.",
+    "longDescription": "Created with `new Worker(filename, { workerData })` from the `worker_threads` module. Workers have their own event loop and V8 instance but share `SharedArrayBuffer` regions with other workers and the main thread. Communication uses `MessageChannel` / `parentPort.postMessage()` — data is structured-cloned (copied) by default. Atomics and `SharedArrayBuffer` enable lock-free concurrent data access. Unlike `child_process`, workers are lighter (no process overhead) and can share memory — but shared memory concurrency is complex. Best for: image processing, data parsing, intensive computation. The `piscina` library provides a worker thread pool abstraction.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["worker_threads", "threads", "SharedArrayBuffer", "concurrency"]
+  },
+  {
+    "topic": "REPL",
+    "shortDescription": "Read-Eval-Print Loop — Node.js's interactive shell, started by running `node` with no arguments. Useful for quickly testing expressions, exploring APIs, and debugging.",
+    "longDescription": "In the REPL: type any JS expression and press Enter to see the result. `_` holds the result of the last expression. `.help` shows available commands; `.exit` quits; `.load file.js` loads a file; `.save file.js` saves the session. Tab completion works for globals, module properties, and local variables. The REPL can be embedded in applications via `const repl = require('repl'); repl.start()`, allowing custom context variables to be exposed. Node.js 20+ ships an improved REPL with better ES module support. The `--experimental-repl-await` flag (or default in newer versions) allows top-level `await` in the REPL.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["REPL", "interactive", "debugging", "shell"]
+  },
+  {
+    "topic": "require()",
+    "shortDescription": "The synchronous function used in CommonJS modules to load another module, a JSON file, or a native addon. Returns the `module.exports` value of the target module, caching it after the first load.",
+    "longDescription": "Resolution order for `require('foo')`: (1) core modules (e.g., `'fs'`, `'path'`); (2) if path starts with `./`, `../`, or `/` — file resolution (tries exact path, then `.js`, `.json`, `.node`, then `index.js`); (3) otherwise — walks up `node_modules` directories from the current file's location. The cache at `require.cache` is keyed by absolute path. To force a fresh load, delete the cache entry: `delete require.cache[require.resolve('./foo')]`. `require.resolve(id)` returns the absolute path without loading the module. JSON files are parsed automatically. Native addons (`.node` files) are loaded with `process.dlopen`.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["require", "CJS", "module resolution", "cache"]
+  },
+  {
+    "topic": "Graceful Shutdown",
+    "shortDescription": "The practice of cleanly stopping a Node.js server when it receives a termination signal — finishing in-flight requests, closing database connections, and flushing buffers before exiting.",
+    "longDescription": "A typical pattern: listen for `SIGTERM` (sent by Kubernetes, systemd, Docker stop) and `SIGINT` (Ctrl+C). On signal: stop accepting new connections with `server.close(callback)`, wait for existing requests to finish (the callback fires when the last connection closes), then close DB connections, flush logs, and call `process.exit(0)`. Set a timeout to force exit if shutdown takes too long. Without graceful shutdown, in-flight requests are aborted, DB writes may be incomplete, and connection pools may leak. Health-check endpoints (e.g., `/health/ready`) should return 503 during shutdown so load balancers stop routing traffic immediately.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["graceful shutdown", "SIGTERM", "SIGINT", "server.close"]
+  },
+  {
+    "topic": "Environment Variables",
+    "shortDescription": "Key-value pairs in the process environment accessed via `process.env`. The standard way to externalize configuration (ports, API keys, database URLs) so they differ between environments without code changes.",
+    "longDescription": "All values in `process.env` are strings — parse them explicitly: `parseInt(process.env.PORT, 10)`, `process.env.FEATURE_FLAG === 'true'`. Undefined variables are `undefined` (not an empty string). Common practice: use the `dotenv` package to load a `.env` file during local development (`dotenv.config()` populates `process.env` from `.env`). Never commit `.env` files with secrets to source control. In production, inject env vars via the platform (Docker `-e`, Kubernetes Secrets, cloud provider secrets managers). Validate required variables at startup and fail fast if they are missing rather than crashing later on undefined access.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["env vars", "process.env", "configuration", "dotenv"]
+  },
+  {
+    "topic": "Error Handling",
+    "shortDescription": "Node.js errors come in four flavors: synchronous throws (caught with try/catch), callback errors (first argument pattern), rejected Promises (caught with .catch or try/catch in async functions), and emitted 'error' events on EventEmitters.",
+    "longDescription": "Synchronous: wrap in `try/catch`. Promises: always chain `.catch()` or use `try/catch` with `await`. EventEmitter: always attach `emitter.on('error', handler)` — an unhandled `error` event throws and crashes. Unhandled rejections: in Node ≥ 15 they crash the process; use `process.on('unhandledRejection', handler)` as a last resort to log before exit, not to suppress. Custom error classes: `class ValidationError extends Error { constructor(msg) { super(msg); this.name = 'ValidationError'; } }` — check with `err instanceof ValidationError` or `err.name`. Operational errors (bad input, network failure) vs. programmer errors (bugs) — crash on programmer errors, recover from operational ones.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["error handling", "try/catch", "unhandledRejection", "EventEmitter"]
+  },
+  {
+    "topic": "Debugging",
+    "shortDescription": "Node.js has a built-in debugger accessible via `node --inspect` (or `--inspect-brk` to pause at start). Chrome DevTools or VS Code can connect to the inspector protocol for breakpoints, step-through, and memory profiling.",
+    "longDescription": "`node --inspect server.js` starts the inspector on `127.0.0.1:9229`. Open `chrome://inspect` in Chrome and click the target. `--inspect-brk` pauses before the first line — useful for debugging startup code. VS Code: use a `launch.json` with `\"type\": \"node\"` and `\"request\": \"launch\"` for a full debugging session with breakpoints directly in the editor. `console.log` is still the most common approach for quick checks but is not a substitute for real debugging of complex state. `node:inspector` module allows programmatic access. For production profiling: `--prof` generates a V8 profile, `node --prof-process` converts it to human-readable output.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["debugging", "inspect", "DevTools", "breakpoints", "profiling"]
+  },
+  {
+    "topic": "Security Best Practices",
+    "shortDescription": "Key Node.js security concerns: input validation to prevent injection, avoiding `eval` and `child_process` with user data, keeping dependencies updated, using HTTPS, and not exposing stack traces in production.",
+    "longDescription": "Top issues: (1) Injection — sanitize all user input; use parameterized queries, never string-concatenate SQL; avoid passing user input to `exec`, `eval`, or `new Function`. (2) Dependency vulnerabilities — run `npm audit` regularly; use `npm ci` in CI. (3) Prototype pollution — watch for recursive merge of user-supplied objects into `{}`. (4) Regex DoS (ReDoS) — avoid complex regexes on untrusted input. (5) Path traversal — use `path.resolve` and verify the result is within the intended directory before file access. (6) Secrets — never log `process.env` wholesale; use a secrets manager in production. (7) Headers — use `helmet` middleware to set security headers (CSP, HSTS, X-Frame-Options). (8) Rate limiting — protect APIs from brute force with `express-rate-limit`.",
+    "mainCategory": "Vocabulary - Node.js",
+    "tags": ["security", "injection", "prototype pollution", "helmet", "npm audit"]
+  }
+]
