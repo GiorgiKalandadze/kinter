@@ -271,20 +271,27 @@ const DATA_FILES = [
 
 let _allData = null;
 
+function categoryFromFile(path) {
+  return path.split('/').pop().replace(/\.json$/i, '').replace(/^101\s*-?\s*/, '').trim();
+}
+
 async function loadAllData() {
   if (_allData) return _allData;
-  const arrays = await Promise.all(DATA_FILES.map(f => fetch(f).then(r => r.json())));
+  const arrays = await Promise.all(DATA_FILES.map(async f => {
+    const items = await fetch(f).then(r => r.json());
+    const fileCategory = categoryFromFile(f);
+    return items.map(q => ({ ...q, fileCategory }));
+  }));
   _allData = arrays.flat();
   return _allData;
 }
 
 async function getCategories() {
   const data = await loadAllData();
-  console.log(data);
-  
+
   const counts = {};
   data.forEach(q => {
-    if (q.mainCategory) counts[q.mainCategory] = (counts[q.mainCategory] || 0) + 1;
+    counts[q.fileCategory] = (counts[q.fileCategory] || 0) + 1;
   });
   return Object.entries(counts)
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -293,7 +300,7 @@ async function getCategories() {
 
 async function getQuestions(category) {
   const data = await loadAllData();
-  return (category ? data.filter(q => q.mainCategory === category) : data)
+  return (category ? data.filter(q => q.fileCategory === category) : data)
     .map(({ topic, shortDescription, longDescription, tags }) => ({
       topic,
       shortDescription: shortDescription || '',
