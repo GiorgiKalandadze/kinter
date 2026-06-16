@@ -225,7 +225,7 @@
       <div id="empty">No cards match the selected topic.</div>
     </div>
 
-    <div id="filter-bar"></div>
+    <!-- <div id="filter-bar"></div> -->
 
     <div id="controls">
       <button class="nav-btn" id="prev-btn">
@@ -255,9 +255,11 @@
 </div>
 <script>
 const DATA_FILES = [
+  'data/101 - Abbrevations.json',
   'data/101 - Algorithms.json',
   'data/101 - Cloud and Devops.json',
   'data/101 - JS.json',
+  'data/101 - K8S.json',
   'data/101 - Mongo.json',
   'data/101 - Node.json',
   'data/101 - OS.json',
@@ -363,16 +365,16 @@ async function enterCategory(name) {
   badge.classList.add('visible');
   document.getElementById('progress-wrap').style.display = 'flex';
 
-  const allTags = [...new Set(allCards.flatMap(c => c.tags || []))].sort();
-  const filterBar = document.getElementById('filter-bar');
-  filterBar.innerHTML = '';
-  allTags.forEach(tag => {
-    const chip = document.createElement('button');
-    chip.className = 'topic-chip';
-    chip.textContent = tag;
-    chip.addEventListener('click', () => toggleTag(tag, chip));
-    filterBar.appendChild(chip);
-  });
+  // const allTags = [...new Set(allCards.flatMap(c => c.tags || []))].sort();
+  // const filterBar = document.getElementById('filter-bar');
+  // filterBar.innerHTML = '';
+  // allTags.forEach(tag => {
+  //   const chip = document.createElement('button');
+  //   chip.className = 'topic-chip';
+  //   chip.textContent = tag;
+  //   chip.addEventListener('click', () => toggleTag(tag, chip));
+  //   filterBar.appendChild(chip);
+  // });
 
   document.getElementById('category-screen').style.display = 'none';
   document.getElementById('card-screen').classList.add('visible');
