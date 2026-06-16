@@ -120,7 +120,7 @@
   },
   {
     "topic": "API Server (kube-apiserver)",
-    "shortDescription": "The front-end of the Kubernetes control plane. All cluster operations go through it — kubectl, controllers, kubelets, and external tools all talk to the API server via HTTPS REST or gRPC.",
+    "shortDescription": "The front-end of the Kubernetes control plane. All cluster operations go through it — kubectl, controllers, kubelets, and external tools all talk to the API server via HTTPS REST or gRPC. It is the only component in the cluster that talks directly to the state store (etcd).",
     "longDescription": "The API server is stateless — all cluster state is stored in etcd, and the API server is the only component that talks to etcd. It handles: authentication (who are you?), authorization (what can you do? — RBAC, ABAC, Node, Webhook), admission control (mutating then validating webhooks + built-in admission plugins), and request validation. It persists objects to etcd and serves watch streams so controllers and kubelets get notified of changes without polling. Horizontal scaling: multiple API server replicas can run behind a load balancer (each is stateless). The API is versioned and extensible via CRDs and Aggregation Layer. API groups: core (`/api/v1`), named groups (`/apis/apps/v1`, `/apis/networking.k8s.io/v1`).",
     "mainCategory": "Vocabulary - K8s",
     "tags": ["API server", "kube-apiserver", "control plane", "authentication", "admission"]

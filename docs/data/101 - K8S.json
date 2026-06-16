@@ -1,0 +1,102 @@
+[
+  {
+    "topic": "Can you explain the exact technical difference between a Pod's Phase and its Conditions? Walk me through a scenario where a Pod is in a Running phase but is completely unable to serve traffic.",
+    "shortDescription": "A Pod Phase is a high-level, aggregate summary of the Pod's lifecycle status (e.g., Pending, Running), while Pod Conditions are granular, boolean checkpoints (e.g., PodScheduled, Ready). A Pod can be in a 'Running' phase but unable to serve traffic if its application container fails its Readiness Probe, which causes the Ready condition to evaluate to False and drops the Pod from the Service endpoint routing pool.",
+    "longDescription": "",
+    "mainCategory": "Kubernetes Architecture",
+    "tags": ["k8s", "pod-lifecycle", "troubleshooting"]
+  },
+  {
+    "topic": "We have a stateless microservice behind an Nginx Ingress. During a rolling deployment, users occasionally experience 502 Bad Gateway errors for a brief window when old Pods are terminating. How do you diagnose and fix this using Pod lifecycle configurations?",
+    "shortDescription": "This is a race condition where a Pod receives a SIGTERM signal and stops processing requests before the Ingress controller finishes updating its routing tables. It is mitigated by implementing a preStop lifecycle hook (e.g., running a sleep command) to pause container termination, giving the Endpoint and Ingress controllers sufficient time to cleanly remove the Pod's IP from the active traffic pool.",
+    "longDescription": "",
+    "mainCategory": "Kubernetes Workloads",
+    "tags": ["k8s", "ingress", "zero-downtime"]
+  },
+  {
+    "topic": "You need to debug a broken, crashing Pod in a highly secure production environment. The application container is built using a 'distroless' or scratch image (meaning there is no shell, no curl, and no package manager), and you cannot SSH into the worker nodes. How do you inspect the running container's filesystem and network namespace?",
+    "shortDescription": "Standard troubleshooting commands like 'kubectl exec' fail in distroless environments due to the lack of an internal shell. The solution is to use 'kubectl debug' to dynamically inject an Ephemeral Container into the running Pod sandbox, leveraging Process Namespace Sharing (--target) to inspect the target container's filesystem, network sockets, and process states using native debugging utilities.",
+    "longDescription": "",
+    "mainCategory": "Kubernetes Operations",
+    "tags": ["k8s", "security", "debugging"]
+  },
+  {
+    "topic": "Imagine we have a highly trafficked microservice running 10 replicas behind a Kubernetes Service. Traffic spikes cause a massive database bottleneck, causing Readiness Probes on 3 Pods to time out. Walk me through what happens next to the cluster and how you prevent it.",
+    "shortDescription": "This triggers a cascading failure (death spiral) where removing the 3 unready Pods forces the remaining 7 healthy replicas to absorb all incoming traffic, rapidly overwhelming them and knocking the entire service offline. It is prevented by decoupling readiness probe logic from external dependencies (like databases), adjusting probe timeout thresholds, and implementing circuit breakers or autoscaling.",
+    "longDescription": "",
+    
+    "mainCategory": "Kubernetes Reliability",
+    "tags": ["k8s", "probes", "resiliency"]
+  },
+  
+  {
+    "topic": "Why are Dockerfiles structured in layers, and how does the build cache work?",
+    "shortDescription": "Each instruction in a Dockerfile (like RUN, COPY, ADD) creates a read-only image layer. Docker uses a build cache to speed up subsequent builds by reusing existing layers; if an instruction and the files it references haven't changed, Docker skips executing that step and reuses the cached layer from the previous build.",
+    "longDescription": "",
+    "mainCategory": "Containers",
+    "tags": ["junior", "dockerfile", "caching"]
+  },
+  {
+    "topic": "How do multi-stage Docker builds optimize image size, and what problem do they solve?",
+    "shortDescription": "Multi-stage builds allow you to use multiple FROM statements in a single Dockerfile, separating the compilation/build environment from the final runtime environment. This solves the problem of bloated production images by ensuring that heavy build tools, compilers, and source files are discarded, leaving only the compiled binary and minimal dependencies in the final layer.",
+    "longDescription": "",
+    "mainCategory": "Containers",
+    "tags": ["mid-level", "optimization", "best-practices"]
+  },
+  {
+    "topic": "What is the technical difference between the CMD and ENTRYPOINT instructions in a Dockerfile?",
+    "shortDescription": "ENTRYPOINT defines the executable that will always be run when the container starts, acting as the fixed command. CMD provides default arguments for that ENTRYPOINT, which can be easily overridden by appending text to the end of the execution command (e.g., 'docker run <image> <override-args>').",
+    "longDescription": "",
+    "mainCategory": "Containers",
+    "tags": ["mid-level", "dockerfile", "configuration"]
+  },
+  {
+    "topic": "How do Linux namespaces and cgroups fundamentally differ in how they isolate and restrict a container process?",
+    "shortDescription": "Namespaces provide the illusion of isolation by restricting what a container process can *see* (e.g., isolating process trees via PID, network interfaces via NET, mounts via MNT). Control Groups (cgroups) restrict what a container process can *consume*, enforcing hard resource boundaries on physical hardware limitations such as CPU, memory, and I/O bandwidth.",
+    "longDescription": "",
+    "mainCategory": "Containers",
+    "tags": ["senior", "linux-kernel", "security"]
+  },
+  {
+    "topic": "What is the Container Runtime Interface (CRI), and how does a high-level runtime like containerd interact with a low-level runtime like runc under OCI specs?",
+    "shortDescription": "The CRI is a standard API plugin interface enabling Kubernetes to use various container runtimes without recompiling. When a pod is scheduled, the kubelet sends a gRPC request over CRI to a high-level runtime (like containerd or CRI-O) to manage the container lifecycle; the high-level runtime then invokes a low-level OCI-compliant runtime (like runc) to interact directly with Linux kernel namespaces/cgroups to spin up the actual container process.",
+    "longDescription": "",
+    "mainCategory": "Containers",
+    "tags": ["senior", "architecture", "kubernetes"]
+  },
+  {
+  "topic": "Why do we need a separate log collector app inside pod if an applications already include built-in logging frameworks?",
+  "shortDescription": "While application-level loggers (like Winston or Serilog) are excellent at generating and formatting logs to stdout, making them directly responsible for compressing, buffering, and shipping logs over the network introduces critical CPU/memory overhead, data loss risks during target database downtime, and multi-language configuration sprawl. A separate log collector ensures separation of concerns by independently harvesting console outputs, enriching them with cluster metadata, and managing network retries resiliently without impacting core application performance.",
+  "longDescription": "",
+  "mainCategory": "Kubernetes Observability",
+  "tags": ["mid-level", "logging", "architecture"]
+},
+{
+  "topic": "What is the role of the hidden 'Pause' container inside a Kubernetes Pod, and what architectural problem does it solve?",
+  "shortDescription": "The Pause container is a minimal, low-resource container that boots up first inside every Pod to initialize and hold open the shared Linux namespaces (Network, IPC, and optionally PID) that define the Pod sandbox. By acting as a permanent infrastructure anchor, it ensures that if the main application containers crash, restart, or undergo a rolling upgrade, the Pod's underlying IP address and network configuration are preserved continuously without triggering a destructive teardown of the network space.",
+  "longDescription": "",
+  "mainCategory": "Kubernetes Architecture",
+  "tags": ["mid-level", "pod-internals", "linux-namespaces"]
+},
+{
+  "topic": "Is the Pause container utilized in single-container Pods, or is it strictly reserved for multi-container configurations?",
+  "shortDescription": "The Pause container is initialized for every single Pod in Kubernetes, regardless of container count. In a single-container Pod, it serves as the essential anchor that keeps the Pod's network namespace and IP address alive during application crashes or restarts, preventing costly IP re-allocations and cluster-wide routing updates while ensuring cluster health probes can continuously monitor the sandbox environment.",
+  "longDescription": "",
+  "mainCategory": "Kubernetes Architecture",
+  "tags": ["mid-level", "pod-lifecycle", "networking"]
+},
+{
+  "topic": "Why would you choose a DaemonSet over a standard Deployment/ReplicaSet when deploying a node-level monitoring agent?",
+  "shortDescription": "A DaemonSet automatically binds the lifecycle and quantity of its Pod replicas directly to the cluster's Node topology, ensuring exactly one Pod runs on every worker node dynamically as the cluster scales. In contrast, a standard Deployment/ReplicaSet relies on a static replica count number and standard scheduler constraints, which cannot guarantee even, one-per-node coverage across changing cluster sizes.",
+  "longDescription": "",
+  "mainCategory": "Kubernetes Workloads",
+  "tags": ["junior", "workloads", "scheduling"]
+},
+{
+  "topic": "What are the contrasting production use cases that dictate choosing a DaemonSet over a standard Deployment?",
+  "shortDescription": "A Deployment is selected for standard stateless application workloads (like APIs or frontends) where replica scaling scales dynamically with user traffic and is placed independently across infrastructure. A DaemonSet is explicitly selected for platform-level operational utilities (like log collectors, security agents, or network plugins) that require local access to host hardware or kernel namespaces on every single server node in the cluster.",
+  "longDescription": "",
+  "mainCategory": "Kubernetes Workloads",
+  "tags": ["mid-level", "workload-design", "architecture"]
+}
+]

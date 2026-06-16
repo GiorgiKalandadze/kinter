@@ -1,0 +1,359 @@
+[
+  {
+    "topic": "K8s",
+    "shortDescription": "Kubernetes",
+    "longDescription": "An open-source container orchestration platform designed to automate deploying, scaling, and operating application containers across clusters of hosts.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["orchestration", "containers", "cluster", "devops"]
+  },
+  {
+    "topic": "PV",
+    "shortDescription": "PersistentVolume",
+    "longDescription": "A piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using a StorageClass. It has a lifecycle independent of any individual pod that uses the PV.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["storage", "volume", "static-provisioning", "lifecycle"]
+  },
+  {
+    "topic": "PVC",
+    "shortDescription": "PersistentVolumeClaim",
+    "longDescription": "A request for storage by a user or pod. It specifies size, access modes (like ReadWriteOnce), and optionally a StorageClass to dynamically bind to a PersistentVolume.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["storage", "claim", "binding", "accessModes"]
+  },
+  {
+    "topic": "SC",
+    "shortDescription": "StorageClass",
+    "longDescription": "A Kubernetes object that describes the 'classes' of storage available (e.g., SSD vs HDD). It enables dynamic provisioning of PersistentVolumes on-demand when a PVC requests it.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["storage", "dynamic-provisioning", "provisioner", "parameters"]
+  },
+  {
+    "topic": "CSI",
+    "shortDescription": "Container Storage Interface",
+    "longDescription": "A standard specification that allows container orchestration systems like Kubernetes to expose arbitrary storage systems (like AWS EBS, Ceph, NetApp) to containerized workloads.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["storage", "interface", "driver", "plugin"]
+  },
+  {
+    "topic": "HPA",
+    "shortDescription": "Horizontal Pod Autoscaler",
+    "longDescription": "A controller that automatically scales the number of Pods in a replication controller, deployment, replica set, or stateful set based on observed CPU utilization or custom metrics.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["autoscaling", "pods", "metrics", "replica"]
+  },
+  {
+    "topic": "VPA",
+    "shortDescription": "Vertical Pod Autoscaler",
+    "longDescription": "A tool that automatically adjusts the CPU and memory reservations (requests and limits) of pods in a cluster to optimize resource utilization based on historical usage.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["autoscaling", "resources", "cpu", "memory"]
+  },
+  {
+    "topic": "CRD",
+    "shortDescription": "Custom Resource Definition",
+    "longDescription": "A powerful Kubernetes feature that allows users to define custom, user-created resources to extend the Kubernetes API beyond its default out-of-the-box resource types.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["api", "extension", "custom-resource", "operator"]
+  },
+  {
+    "topic": "RBAC",
+    "shortDescription": "Role-Based Access Control",
+    "longDescription": "A method of regulating access to computer or network resources based on the roles of individual users within an enterprise. In K8s, it uses Roles, ClusterRoles, RoleBindings, and ClusterRoleBindings.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["security", "authorization", "roles", "permissions"]
+  },
+  {
+    "topic": "SA",
+    "shortDescription": "ServiceAccount",
+    "longDescription": "An identity created by the Kubernetes API that provides an identity for processes running in a Pod, allowing them to authenticate against the cluster's API server.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["identity", "security", "authentication", "pod-identity"]
+  },
+  {
+    "topic": "OOM",
+    "shortDescription": "Out Of Memory",
+    "longDescription": "A state where a container or node runs out of available memory. In K8s, an 'OOMKilled' status indicates the Linux kernel terminated a container process because it exceeded its defined memory limit.",
+    "mainCategory": "Vocabulary - K8s",
+    "tags": ["troubleshooting", "memory", "limits", "kernel"]
+  },
+  {
+    "topic": "TCP",
+    "shortDescription": "Transmission Control Protocol",
+    "longDescription": "A core, connection-oriented protocol of the Internet protocol suite that ensures reliable, ordered, and error-checked delivery of data packets between applications running on hosts.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["networking", "protocol", "connection", "reliable"]
+  },
+  {
+    "topic": "UDP",
+    "shortDescription": "User Datagram Protocol",
+    "longDescription": "A minimal, connectionless Internet protocol that allows computer applications to send messages (datagrams) to other hosts without prior communications to set up special transmission channels.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["networking", "protocol", "connectionless", "speed"]
+  },
+  {
+    "topic": "CIDR",
+    "shortDescription": "Classless Inter-Domain Routing",
+    "longDescription": "A method for allocating IP addresses and routing IP packets. It replaces the old class-based system with a flexible slash notation (e.g., /24) to define network prefixes and host masks.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["ip-addressing", "routing", "subnet", "mask"]
+  },
+  {
+    "topic": "DNS",
+    "shortDescription": "Domain Name System",
+    "longDescription": "A hierarchical and decentralized naming system for computers, services, or other resources connected to the Internet or a private network, translating human-readable hostnames to IP addresses.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["networking", "name-resolution", "domain", "ip"]
+  },
+  {
+    "topic": "TLS",
+    "shortDescription": "Transport Layer Security",
+    "longDescription": "A cryptographic protocol designed to provide communications security over a computer network, serving as the modern, secure successor to Secure Sockets Layer (SSL).",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["security", "encryption", "ssl", "certificates"]
+  },
+  {
+    "topic": "SSL",
+    "shortDescription": "Secure Sockets Layer",
+    "longDescription": "The deprecated cryptographic protocol precursor to TLS used for establishing encrypted links between web servers and browsers. The term is still colloquially used to refer to TLS certificates.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["security", "encryption", "legacy", "certificates"]
+  },
+  {
+    "topic": "HTTP",
+    "shortDescription": "HyperText Transfer Protocol",
+    "longDescription": "The foundational application-layer protocol used for transmitting hypermedia documents, such as HTML, images, and API payloads, across the web in unencrypted plain text.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["web", "protocol", "application-layer", "clear-text"]
+  },
+  {
+    "topic": "HTTPS",
+    "shortDescription": "HyperText Transfer Protocol Secure",
+    "longDescription": "An extension of the HyperText Transfer Protocol where the communication protocol is encrypted using Transport Layer Security (TLS) or Secure Sockets Layer (SSL).",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["web", "security", "encryption", "tls"]
+  },
+  {
+    "topic": "SSH",
+    "shortDescription": "Secure Shell",
+    "longDescription": "A cryptographic network protocol for operating network services securely over an unsecured network, most commonly used for secure remote command-line login and command execution.",
+    "mainCategory": "Vocabulary - Networking",
+    "tags": ["remote-access", "security", "linux", "terminal"]
+  },
+  {
+    "topic": "NFS",
+    "shortDescription": "Network File System",
+    "longDescription": "A distributed file system protocol that allows a user on a client computer to access files over a computer network much like local storage is accessed.",
+    "mainCategory": "Vocabulary - Architecture",
+    "tags": ["storage", "file-system", "network-sharing", "rwx"]
+  },
+  {
+    "topic": "NAS",
+    "shortDescription": "Network-Attached Storage",
+    "longDescription": "A dedicated, file-level computer data storage server connected to a computer network, providing data access to a heterogeneous group of clients using protocols like NFS or SMB.",
+    "mainCategory": "Vocabulary - Architecture",
+    "tags": ["storage", "appliance", "file-level", "hardware"]
+  },
+  {
+    "topic": "SAN",
+    "shortDescription": "Storage Area Network",
+    "longDescription": "A specialized, high-speed network that provides block-level network access to storage, presenting raw disks to host servers rather than shared file-level directories.",
+    "mainCategory": "Vocabulary - Architecture",
+    "tags": ["storage", "block-level", "high-performance", "fibre-channel"]
+  },
+  {
+    "topic": "CDN",
+    "shortDescription": "Content Delivery Network",
+    "longDescription": "A geographically distributed network of proxy servers and data centers aimed at providing high availability and performance by caching static assets closer to end-users.",
+    "mainCategory": "Vocabulary - Architecture",
+    "tags": ["latency", "caching", "edge", "performance"]
+  },
+  {
+    "topic": "HA",
+    "shortDescription": "High Availability",
+    "longDescription": "A characteristic of a system or component that aims to ensure an agreed level of operational performance, usually uptime, for a higher-than-normal period by eliminating single points of failure.",
+    "mainCategory": "Vocabulary - Architecture",
+    "tags": ["reliability", "redundancy", "uptime", "failover"]
+  },
+  {
+    "topic": "AWS",
+    "shortDescription": "Amazon Web Services",
+    "longDescription": "A comprehensive, evolving cloud computing platform provided by Amazon that includes a mixture of infrastructure as a service (IaaS), platform as a service (PaaS) and packaged software as a service (SaaS) offerings.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["cloud-provider", "infrastructure", "amazon", "iaas"]
+  },
+  {
+    "topic": "GCP",
+    "shortDescription": "Google Cloud Platform",
+    "longDescription": "A suite of cloud computing services offered by Google that runs on the same infrastructure that Google uses internally for its end-user products, such as Google Search and YouTube.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["cloud-provider", "infrastructure", "google", "paas"]
+  },
+  {
+    "topic": "EC2",
+    "shortDescription": "Elastic Compute Cloud",
+    "longDescription": "A core web service provided by AWS that provides secure, resizable compute capacity in the cloud in the form of virtual servers called instances.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["compute", "virtual-machine", "aws", "instance"]
+  },
+  {
+    "topic": "S3",
+    "shortDescription": "Simple Storage Service",
+    "longDescription": "A highly scalable object storage service provided by AWS, designed for storing and retrieving any amount of data from anywhere via API calls.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["storage", "object-storage", "aws", "bucket"]
+  },
+  {
+    "topic": "IAM",
+    "shortDescription": "Identity and Access Management",
+    "longDescription": "A framework of policies and technologies for ensuring that the proper people and service accounts have the correct access to technology resources in cloud systems.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["security", "permissions", "authentication", "roles"]
+  },
+  {
+    "topic": "VPC",
+    "shortDescription": "Virtual Private Cloud",
+    "longDescription": "A logically isolated virtual network dedicated to a specific cloud account, allowing users to provision cloud resources inside a custom-configured private network layer.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["networking", "isolation", "subnet", "security-groups"]
+  },
+  {
+    "topic": "AZ",
+    "shortDescription": "Availability Zone",
+    "longDescription": "One or more discrete data centers with redundant power, networking, and connectivity within a cloud region, designed to isolate faults from other availability zones.",
+    "mainCategory": "Vocabulary - Cloud",
+    "tags": ["infrastructure", "datacenter", "redundancy", "region"]
+  },
+  {
+    "topic": "API",
+    "shortDescription": "Application Programming Interface",
+    "longDescription": "A set of protocols, routines, and tools that defines how software components should interact, allowing separate applications to communicate and share data with one another.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["interface", "integration", "contract", "development"]
+  },
+  {
+    "topic": "REST",
+    "shortDescription": "Representational State Transfer",
+    "longDescription": "An architectural style for providing standards between computer systems on the web, utilizing stateless, client-server communications over standard HTTP verbs.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["architecture", "http", "stateless", "json"]
+  },
+  {
+    "topic": "RPC",
+    "shortDescription": "Remote Procedure Call",
+    "longDescription": "A protocol that one program can use to request a service from a program located in another computer on a network without having to understand the network's details.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["networking", "inter-process-communication", "protocol", "distributed"]
+  },
+  {
+    "topic": "gRPC",
+    "shortDescription": "gRPC Remote Procedure Calls",
+    "longDescription": "An open-source, high-performance remote procedure call framework developed by Google, running over HTTP/2 and utilizing Protocol Buffers as its interface description language.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["architecture", "http2", "protobuf", "performance"]
+  },
+  {
+    "topic": "CORS",
+    "shortDescription": "Cross-Origin Resource Sharing",
+    "longDescription": "A browser-enforced mechanism that uses additional HTTP headers to tell browsers to give a web application running at one origin access to selected resources from a different origin.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["security", "browser", "headers", "origin"]
+  },
+  {
+    "topic": "MVC",
+    "shortDescription": "Model-View-Controller",
+    "longDescription": "A software architectural pattern commonly used to develop user interfaces that divides the program logic into three interconnected elements: data model, presentation layer, and controller logic.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["architecture", "pattern", "ui", "separation-of-concerns"]
+  },
+  {
+    "topic": "CRUD",
+    "shortDescription": "Create, Read, Update, Delete",
+    "longDescription": "The four basic functions of persistent storage, acting as the fundamental database operations mapped to rest operations or standard sql queries.",
+    "mainCategory": "Vocabulary - Software Design",
+    "tags": ["database", "operations", "data", "storage"]
+  },
+  {
+    "topic": "JWT",
+    "shortDescription": "JSON Web Token",
+    "longDescription": "A compact, URL-safe means of representing claims to be transferred between two parties, heavily used for digitally signed token-based stateless authentication.",
+    "mainCategory": "Vocabulary - Security & Identity",
+    "tags": ["security", "authentication", "token", "signature"]
+  },
+  {
+    "topic": "OAuth",
+    "shortDescription": "Open Authorization",
+    "longDescription": "An open standard for access delegation, commonly used as a way for internet users to grant websites or applications access to their information on other websites without giving them passwords.",
+    "mainCategory": "Vocabulary - Security & Identity",
+    "tags": ["security", "authorization", "delegation", "tokens"]
+  },
+  {
+    "topic": "SAML",
+    "shortDescription": "Security Assertion Markup Language",
+    "longDescription": "An XML-based open standard for exchanging authentication and authorization data between an identity provider (IdP) and a service provider (SP), heavily used in enterprise contexts.",
+    "mainCategory": "Vocabulary - Security & Identity",
+    "tags": ["security", "sso", "identity", "xml"]
+  },
+  {
+    "topic": "SSO",
+    "shortDescription": "Single Sign-On",
+    "longDescription": "An authentication scheme that allows a user to log in with a single ID and password to any of several related, yet independent, software systems or application ecosystems.",
+    "mainCategory": "Vocabulary - Security & Identity",
+    "tags": ["security", "authentication", "identity", "access-control"]
+  },
+  {
+    "topic": "OS",
+    "shortDescription": "Operating System",
+    "longDescription": "System software that manages computer hardware and software resources, and provides common background and lifecycle services for computer applications.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["systems", "kernel", "hardware", "software"]
+  },
+  {
+    "topic": "CPU",
+    "shortDescription": "Central Processing Unit",
+    "longDescription": "The primary component of a computer that acts as its 'brain', performing basic arithmetic, logic, controlling, and input/output operations specified by instructions.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["hardware", "compute", "processor", "silicon"]
+  },
+  {
+    "topic": "GPU",
+    "shortDescription": "Graphics Processing Unit",
+    "longDescription": "A specialized electronic circuit designed to manipulate and alter memory to accelerate the creation of images in a frame buffer, now heavily utilized for highly parallel computing workloads like machine learning.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["hardware", "parallel-computing", "ai", "acceleration"]
+  },
+  {
+    "topic": "RAM",
+    "shortDescription": "Random Access Memory",
+    "longDescription": "A form of volatile computer data storage that stores data and machine code currently being used, allowing items to be read or written in almost the same amount of time irrespective of physical location.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["hardware", "memory", "volatile", "performance"]
+  },
+  {
+    "topic": "IOPS",
+    "shortDescription": "Input/Output Operations Per Second",
+    "longDescription": "A standard performance metric used to benchmark computer storage devices like hard disk drives, solid-state drives, and cloud-provisioned storage block volumes.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["metrics", "storage", "throughput", "benchmark"]
+  },
+  {
+    "topic": "POSIX",
+    "shortDescription": "Portable Operating System Interface",
+    "longDescription": "A family of standards specified by the IEEE Computer Society for maintaining compatibility between operating systems, ensuring Unix-like tools compile uniformly across compliant systems.",
+    "mainCategory": "Vocabulary - Systems Core",
+    "tags": ["standards", "unix", "linux", "compatibility"]
+  },
+  {
+    "topic": "CI/CD",
+    "shortDescription": "Continuous Integration / Continuous Deployment",
+    "longDescription": "A modern software engineering practice where code changes are automatically tested and integrated into a shared repository, followed by automated paths shipping it to staging and production.",
+    "mainCategory": "Vocabulary - DevOps",
+    "tags": ["automation", "pipeline", "testing", "deployment"]
+  },
+  {
+    "topic": "IaC",
+    "shortDescription": "Infrastructure as Code",
+    "longDescription": "The management and provisioning of computer data centers and infrastructure resources through machine-readable definition files (like declarative YAML or Terraform files) rather than physical hardware configuration.",
+    "mainCategory": "Vocabulary - DevOps",
+    "tags": ["automation", "terraform", "gitops", "declarative"]
+  }
+]
